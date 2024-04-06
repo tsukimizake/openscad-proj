@@ -1,0 +1,7 @@
+dist-newstyle/
+.stack-work
+*.3mf
+*.stl
+*.scad
+*.gcode
+*.bgcode

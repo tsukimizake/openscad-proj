@@ -1,0 +1,72 @@
+{-# OPTIONS_GHC -Wno-deferred-out-of-scope-variables #-}
+
+module HoneyCombWall (honeyCombCell, honeyCombWall) where
+
+import Data.Function ((&))
+import Debug.Trace
+import OpenSCAD
+import PathExtrude
+
+cos30 = sqrt 3 / 2
+
+sin30 = 1 / 2
+
+honeyCombCell :: Double -> Double -> OpenSCADM Model3d
+honeyCombCell height size =
+  do
+    let scaler (x, y, z) = (x * size, y * size, z * size)
+        crossSection = rectangle height 2
+    declModule "honeyCombCell" $
+      union
+        [ stick (0, 0, 0) (scaler (cos30, sin30, 0)) crossSection,
+          stick (size * cos30, size * sin30, 0) (size * cos30, size * (1 + sin30), 0) crossSection,
+          stick (scaler (cos30, 1 + sin30, 0)) (scaler (0, 2, 0)) crossSection,
+          stick (scaler (0, 2, 0)) (scaler (-cos30, 1 + sin30, 0)) crossSection,
+          stick (scaler (-cos30, 1 + sin30, 0)) (scaler (-cos30, sin30, 0)) crossSection,
+          stick (scaler (-cos30, sin30, 0)) (0, 0, 0) crossSection
+        ]
+        & translate (0, 0, height)
+
+stick :: Vector3d -> Vector3d -> Model2d -> Model3d
+stick from to crossSection =
+  let (x, y, z) = (to #- from)
+
+      len = sqrt $ x * x + y * y + z * z
+      toDegree x = x * 180 / pi
+      degree =
+        if x < 0
+          then (180 +) . toDegree . atan
+          else toDegree . atan
+   in linearExtrudeDefault len crossSection
+        & rotate3d (0, 90, 0)
+        & rotate3d (0, 0, degree (y / x))
+        & translate from
+
+honeyCombWall :: Double -> Vector3d -> OpenSCADM Model3d
+honeyCombWall honeyCombScale (x, y, z) = do
+  cell <- honeyCombCell z honeyCombScale
+
+  let cells =
+        [ (y / (2 * honeyCombScale), x, y, 0)
+          | x <- [0, 2 * honeyCombScale .. x + honeyCombScale],
+            y <- [0, 2 * honeyCombScale .. y + honeyCombScale]
+        ]
+          & map
+            ( \(i, x, y, z) ->
+                translate
+                  ( if even (floor i)
+                      then x * cos30
+                      else (x - honeyCombScale) * cos30,
+                    (1 + sin30) / 2 * y,
+                    z
+                  )
+                  cell
+            )
+      outer = box x y z
+      inner = box (x - 8) (y - 8) (z + 2) & translate (4, 4, -1)
+      rim = difference outer inner
+
+  pure $
+    union cells
+      & with intersection outer
+      & with union rim
