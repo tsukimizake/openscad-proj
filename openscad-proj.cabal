@@ -45,6 +45,7 @@ library
 executable openscad-proj-exe
   main-is: Main.hs
   other-modules:
+      HexCup
       IveRearAdapter
       KitchenRack
       Paths_openscad_proj

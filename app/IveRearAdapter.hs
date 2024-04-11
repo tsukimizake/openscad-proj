@@ -18,7 +18,7 @@ catchRight =
                   & translate (16, 0, 0)
               )
     `mappend` (polygon 3 [[(0, 0), (0, 22), (15, 0)]] & linearExtrudeDefault 20)
-    `difference` (boltHoleM5 & rotate3d (90, 0, 0) & translate (25.5, 10, 10))
+    `difference` (boltHoleM5 20 & rotate3d (90, 0, 0) & translate (25.5, 10, 10))
     `difference` (polygon 3 [[(-10, -1), (-5, 22), (3, -1)]] & linearExtrudeDefault 60 & translate (-1, 0, -10))
     `difference` (screwHole M10 40 True & rotate3d (0, 90, 0) & translate (0, 25.5, 25))
     `difference` catcher
@@ -36,15 +36,15 @@ catchLeft =
                       & translate (16, 0, 0)
                   )
         `mappend` (polygon 3 [[(0, 0), (0, 22), (15, 0)]] & linearExtrudeDefault 20)
-        `difference` (boltHoleM5 & rotate3d (90, 0, 0) & translate (25.5, 10, 10))
+        `difference` (boltHoleM5 20 & rotate3d (90, 0, 0) & translate (25.5, 10, 10))
         `difference` catcher
         `difference` pinHole
         `difference` (polygon 3 [[(-10, -1), (-5, 22), (3, -1)]] & linearExtrudeDefault 90 & translate (-1, 0, -20))
     )
     `difference` (screwHole M10 40 True & rotate3d (0, 90, 0) & translate (0, 25.5, 25))
 
-boltHoleM5 :: Model3d
-boltHoleM5 = cylinder (5.3 / 2) 20 def
+boltHoleM5 :: Double -> Model3d
+boltHoleM5 len = cylinder (5.3 / 2) len def
 
 boltHoleM11 :: Model3d
 boltHoleM11 = cylinder (11.5 / 2) 20 def
@@ -72,7 +72,20 @@ casterSide =
                      ]
                      & translate (-6.5, -10, 0)
                  )
-    `mappend` ( polygon 3 [[(0, 0), (20, 0), (20, -10), (0, -10)]]
-                  & linearExtrudeDefault 35
-                  & rotate3d (0, 0, 180)
+    `mappend` ( let depth = -10
+                 in polygon 3 [[(-5, 0), (18, 0), (18, depth), (-5, depth)]]
+                      & linearExtrudeDefault 50
+                      & rotate3d (0, 0, 180)
+                      & translate (0, 0, -10)
               )
+    `difference` ( let hole = boltHoleM5 10 & rotate3d (90, 0, 0)
+                    in union
+                         [ hole & translate (0, 10, 0),
+                           hole & translate (15, 10, 0),
+                           hole & translate (15, 10, 38),
+                           hole & translate (0, 10, 38)
+                         ]
+                         & translate (-14, 0, -5)
+                 )
+
+-- holes

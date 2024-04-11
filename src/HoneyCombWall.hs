@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wno-deferred-out-of-scope-variables #-}
 
-module HoneyCombWall (honeyCombCell, honeyCombWall) where
+module HoneyCombWall (honeyCombCell, honeyCombWall, honeyCombWallHex) where
 
 import Data.Function ((&))
 import Debug.Trace
@@ -66,6 +66,44 @@ honeyCombWall honeyCombScale (x, y, z) = do
       inner = box (x - 8) (y - 8) (z + 2) & translate (4, 4, -1)
       rim = difference outer inner
 
+  pure $
+    union cells
+      & with intersection outer
+      & with union rim
+
+honeyCombWallHex :: Double -> Double -> Double -> OpenSCADM Model3d
+honeyCombWallHex honeyCombScale edgeLength thickness = do
+  cell <- honeyCombCell thickness honeyCombScale
+  let cells = do
+        x <- [0, 2 * honeyCombScale .. edgeLength * 2 + honeyCombScale]
+        y <- [0, 2 * honeyCombScale .. edgeLength * 2 + honeyCombScale * 5]
+        pure $
+          translate (-edgeLength, 0, 0) $
+            translate
+              ( if even (floor (y / (2 * honeyCombScale)))
+                  then x * cos30
+                  else (x - honeyCombScale) * cos30,
+                (1 + sin30) / 2 * y,
+                0
+              )
+              cell
+
+      outer =
+        polygon
+          3
+          [ [(0, 0), (cos30, sin30), (cos30, 1 + sin30), (0, 2), (-cos30, 1 + sin30), (-cos30, sin30)]
+              & map (\(x, y) -> (x * edgeLength, y * edgeLength))
+          ]
+          & linearExtrudeDefault thickness
+      inner =
+        polygon
+          3
+          [ [(0, 0), (cos30, sin30), (cos30, 1 + sin30), (0, 2), (-cos30, 1 + sin30), (-cos30, sin30)]
+              & map (\(x, y) -> (x * (edgeLength - 4), y * (edgeLength - 4)))
+          ]
+          & linearExtrudeDefault (thickness + 2)
+          & translate (0, 4, -1)
+      rim = difference outer inner
   pure $
     union cells
       & with intersection outer
