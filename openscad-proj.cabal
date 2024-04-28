@@ -48,6 +48,7 @@ executable openscad-proj-exe
       HexCup
       IveRearAdapter
       KitchenRack
+      LGuard
       Paths_openscad_proj
   autogen-modules:
       Paths_openscad_proj

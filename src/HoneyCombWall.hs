@@ -46,10 +46,11 @@ honeyCombWall :: Double -> Vector3d -> OpenSCADM Model3d
 honeyCombWall honeyCombScale (x, y, z) = do
   cell <- honeyCombCell z honeyCombScale
 
-  let cells =
+  let rectsize = max x y
+      cells =
         [ (y / (2 * honeyCombScale), x, y, 0)
-          | x <- [0, 2 * honeyCombScale .. x + honeyCombScale],
-            y <- [0, 2 * honeyCombScale .. y + honeyCombScale]
+          | x <- [0, 2 * honeyCombScale .. rectsize + honeyCombScale],
+            y <- [0, 2 * honeyCombScale .. rectsize + honeyCombScale]
         ]
           & map
             ( \(i, x, y, z) ->
@@ -68,6 +69,8 @@ honeyCombWall honeyCombScale (x, y, z) = do
 
   pure $
     union cells
+      & translate (0, -y, 0)
+      & rotate3d (0, 0, 30)
       & with intersection outer
       & with union rim
 
