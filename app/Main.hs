@@ -1,9 +1,9 @@
 module Main (main) where
 
+import HexCup
 import IveRearAdapter
 import KitchenRack
-import HexCup
 import LGuard
 
 main :: IO ()
-main = LGuard.run
+main = IveRearAdapter.run

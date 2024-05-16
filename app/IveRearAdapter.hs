@@ -76,16 +76,16 @@ casterSide =
                  in polygon 3 [[(-5, 0), (18, 0), (18, depth), (-5, depth)]]
                       & linearExtrudeDefault 50
                       & rotate3d (0, 0, 180)
-                      & translate (0, 0, -10)
+                      & translate (0, 0, -8)
               )
-    `difference` ( let hole = boltHoleM5 10 & rotate3d (90, 0, 0)
+    `difference` ( let hole = screwHole M5 15 True & rotate3d (90, 0, 0)
                     in union
                          [ hole & translate (0, 10, 0),
                            hole & translate (15, 10, 0),
                            hole & translate (15, 10, 38),
                            hole & translate (0, 10, 38)
                          ]
-                         & translate (-14, 0, -5)
+                         & translate (-14, 0, -2)
                  )
 
 -- holes
