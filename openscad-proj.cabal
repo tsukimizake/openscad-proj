@@ -45,7 +45,9 @@ library
 executable openscad-proj-exe
   main-is: Main.hs
   other-modules:
+      AirClothCap
       HexCup
+      HonexCombTest
       IveRearAdapter
       KitchenRack
       LGuard

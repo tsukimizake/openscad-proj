@@ -229,7 +229,7 @@ runOpenSCADM = run . runWriter
 
 -- A vector in 2 or 3-space. They are used in transformations of
 -- 'Model's of their type.
-class Eq a => Vector a where
+class (Eq a) => Vector a where
   rVector :: a -> String
   toList :: a -> [Double]
   (#*) :: a -> a -> a -- cross product
@@ -500,7 +500,7 @@ cube x = box x x x
 
 -- | Create a cylinder with @cylinder /radius height 'Facet'/@.
 cylinder :: Double -> Double -> Facets -> Model3d
-cylinder h r f = Solid $ Cylinder h r f
+cylinder r h f = Solid $ Cylinder h r f
 
 -- | Create an oblique cylinder with @cylinder /radius1 height radius2 'Facet'/@.
 obCylinder :: Double -> Double -> Double -> Facets -> OpenSCADM (Model Vector3d)
@@ -608,18 +608,18 @@ surface f i c = Solid $ Surface f i c
 -- And the one polymorphic function we have.
 
 -- | 'importFile' is @import /filename/@.
-importFile :: Vector v => FilePath -> Model v
+importFile :: (Vector v) => FilePath -> Model v
 importFile = Import
 
 -- Transformations
 
 -- | Scale a 'Model', the vector specifying the scale factor for each axis.
-scale :: Vector v => v -> Model v -> Model v
+scale :: (Vector v) => v -> Model v -> Model v
 scale = Scale
 
 -- | Resize a 'Model' to occupy the dimensions given by the vector. Note that
 -- this does nothing prior to the 2014 versions of OpenSCAD.
-resize :: Vector v => v -> Model v -> Model v
+resize :: (Vector v) => v -> Model v -> Model v
 resize = Resize
 
 -- | Rotate a 'Model' around the z-axis
@@ -642,7 +642,7 @@ mirror = Mirror
 -- OpenSCAD color model, but instead uses the 'Data.Colour' model. The
 -- 'Graphics.OpenSCAD' module rexports 'Data.Colour.Names' so you can
 -- conveniently say @'color' 'red' /'Model'/@.
-color :: Vector v => Colour Double -> Model v -> Model v
+color :: (Vector v) => Colour Double -> Model v -> Model v
 color = Color
 
 -- | Render a 'Model' in a transparent color. This uses the
@@ -657,23 +657,23 @@ up f = translate (0, 0, f)
 -- Combinations
 
 -- | Create the union of a list of 'Model's.
-union :: Vector v => [Model v] -> Model v
+union :: (Vector v) => [Model v] -> Model v
 union = Union
 
 -- | Create the intersection of a list of 'Model's.
-intersection :: Vector v => [Model v] -> Model v
+intersection :: (Vector v) => [Model v] -> Model v
 intersection = Intersection
 
 -- | The difference between two 'Model's.
-difference :: Vector v => Model v -> Model v -> Model v
+difference :: (Vector v) => Model v -> Model v -> Model v
 difference = Difference
 
 -- | The Minkowski sum of a list of 'Model's.
-minkowski :: Vector v => [Model v] -> Model v
+minkowski :: (Vector v) => [Model v] -> Model v
 minkowski = Minkowski
 
 -- | The convex hull of a list of 'Model's.
-hull :: Vector v => [Model v] -> Model v
+hull :: (Vector v) => [Model v] -> Model v
 hull = Hull
 
 -- | 'render' does all the real work. It will walk the AST for a 'Model',
@@ -691,10 +691,10 @@ render mainModel =
         <> concatMap (uncurry renderModule) deps
         <> "main();"
 
-renderModule :: Vector v => String -> Model v -> String
+renderModule :: (Vector v) => String -> Model v -> String
 renderModule name model = "module " <> name <> " () {\n" <> show (PP.pretty model) <> "\n}\n"
 
-instance Vector v => PP.Pretty (Model v) where
+instance (Vector v) => PP.Pretty (Model v) where
   pretty =
     PP.group . \case
       Shape s -> PP.pretty s
@@ -778,7 +778,7 @@ instance Vector v => PP.Pretty (Model v) where
         renderTransform (PP.pretty direction) [child, parent]
     where
       renderTransform op ms = op <+> renderSubModels ms
-      renderSubModels :: Vector v => [Model v] -> PP.Doc ann
+      renderSubModels :: (Vector v) => [Model v] -> PP.Doc ann
       renderSubModels = \case
         [m] -> PP.nest 2 $ PP.line' <> PP.pretty m
         ms ->
