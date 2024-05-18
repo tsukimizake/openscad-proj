@@ -69,8 +69,6 @@ honeyCombWall honeyCombScale (x, y, z) = do
 
   pure $
     union cells
-      & translate (0, -y, 0)
-      & rotate3d (0, 0, 30)
       & with intersection outer
       & with union rim
 
