@@ -14,13 +14,12 @@ obj =
     let len = 106
     let half = len / 2
     let height = half
-    wall <- honeyCombWall 10 (len, half, 2) <&> translate (0, 0, -2)
-    let wall1 = wall & rotate3d (90, 0, 0) & translate (-half, -half, 0)
-    let wall2 = wall & rotate3d (90, 0, 0) & translate (-half, half, 0)
+    wall <- honeyCombWall 10 (half, len, 2) <&> rotate3d (0, 0, 90) <&> translate (len, 0, -1)
+    let wall1 = wall & rotate3d (90, 0, 0) & translate (-half - 1, -half, 0)
+    let wall2 = wall & rotate3d (90, 0, 0) & translate (-half, half - 1, 0)
     let wall3 = wall & rotate3d (90, 0, 90) & translate (-half, -half, 0)
-    let wall4 = wall & rotate3d (90, 0, 90) & translate (half, -half, 0)
-    ceil <- honeyCombWall 10 (len, len, 2) <&> translate (-half, -half, height)
-    pure $ union [plate, wall1, wall2, wall3, wall4, ceil]
+    ceil <- honeyCombWall 10 (len + 1, len + 1, 2) <&> rotate3d (0, 0, 90) <&> translate (half, -half - 1, height)
+    pure $ union [plate, wall1, wall2, wall3, ceil]
 
 plate :: Model Vector3d
 plate =

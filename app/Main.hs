@@ -8,4 +8,4 @@ import KitchenRack
 import LGuard
 
 main :: IO ()
-main = AirClothCap.run
+main = IveRearAdapter.run
