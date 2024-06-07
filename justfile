@@ -11,3 +11,5 @@ new_module name:
 set_module:
   source set_module.nu
 
+gc:
+  ls | where name =~ ".scad$" | get name | each {|| rm $in }
