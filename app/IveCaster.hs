@@ -19,17 +19,21 @@ obj =
             upperLeverWindow,
             hookReceiver
           ]
+      outerScrewHole = (screwHole M4 10 True & translate (0, 0, 17))
    in adapterHull
         `difference` inner
         `difference` (inner & mirror (1, 0, 0))
         `difference` (boltHoles & rotate3d (0, 5, 0))
         `difference` (boltHoles & mirror (1, 0, 0) & rotate3d (0, 5, 0))
+        `difference` (outerScrewHole & translate (40, 5, 0))
+        `difference` (outerScrewHole & translate (-40, 5, 5))
+        `difference` (outerScrewHole & translate (40, 55, 0))
+        `difference` (outerScrewHole & translate (-40, 55, 5))
 
 adapterHull :: Model3d
 adapterHull =
   minkowski
-    [ box 94 61 20
-        & (`difference` (box 200 61 20 & rotate3d (0, 5, 0) & translate (-100, 0, 28))),
+    [ polygon 3 [[(0, 0), (94, -8), (94, -20), (0, -20)]] & linearExtrudeDefault 61 & rotate3d (90, 0, 0) & translate (0, 61, 20),
       cylinder 1 1 def
     ]
     & translate (-47, 0, 2.5)
