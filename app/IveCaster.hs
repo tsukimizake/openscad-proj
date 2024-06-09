@@ -95,4 +95,4 @@ run =
   do
     pure obj
     & render
-    & writeFile "product.scad"
+    & writeFile "iveadapter.scad"

@@ -52,6 +52,8 @@ executable openscad-proj-exe
       IveRearAdapter
       KitchenRack
       LGuard
+      PaniaGuard
+      Washer
       Paths_openscad_proj
   autogen-modules:
       Paths_openscad_proj

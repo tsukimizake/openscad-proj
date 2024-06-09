@@ -12,4 +12,4 @@ set_module:
   source set_module.nu
 
 gc:
-  ls | where name =~ ".scad$" | get name | each {|| rm $in }
+ ls | where name =~ ".scad$" or name =~ ".stl$" | get name | each {|| rm $in}
