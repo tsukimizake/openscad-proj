@@ -7,7 +7,7 @@ watch:
 
 new_module name:
   open app/template.hs | str replace --all "TEMPLATE" {{name}} | save app/{{name}}.hs
-
+  open app/Main.hs | lines | insert 2 "import {{name}}" | collect {|| save -f app/Main.hs}
 set_module:
   source set_module.nu
 

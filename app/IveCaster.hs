@@ -19,21 +19,28 @@ obj =
             upperLeverWindow,
             hookReceiver
           ]
-      outerScrewHole = (screwHole M4 10 True & translate (0, 0, 17))
+      outerScrewHole = (screwHole M4 15 True & translate (0, 0, 17))
    in adapterHull
         `difference` inner
         `difference` (inner & mirror (1, 0, 0))
         `difference` (boltHoles & rotate3d (0, 5, 0))
         `difference` (boltHoles & mirror (1, 0, 0) & rotate3d (0, 5, 0))
-        `difference` (outerScrewHole & translate (40, 5, 0))
-        `difference` (outerScrewHole & translate (-40, 5, 5))
-        `difference` (outerScrewHole & translate (40, 55, 0))
-        `difference` (outerScrewHole & translate (-40, 55, 5))
+        `difference` (outerScrewHole & rotate3d (0, -45, 0) & translate (45, 5, 15))
+        `difference` (outerScrewHole & rotate3d (0, 45, 0) & translate (-45, 5, 15))
+        `difference` (outerScrewHole & rotate3d (0, -45, 0) & translate (45, 55, 15))
+        `difference` (outerScrewHole & rotate3d (0, 45, 0) & translate (-45, 55, 15))
 
 adapterHull :: Model3d
 adapterHull =
   minkowski
-    [ polygon 3 [[(0, 0), (94, -8), (94, -20), (0, -20)]] & linearExtrudeDefault 61 & rotate3d (90, 0, 0) & translate (0, 61, 20),
+    [ union
+        [ polygon 3 [[(0, 12), (84, 18), (84, 12), (94, 12), (94, 0), (0, 0)]],
+          polygon 3 [[(0, 12), (10, 25), (30, 12)]],
+          polygon 3 [[(64, 12), (84, 25), (94, 12)]]
+        ]
+        & linearExtrudeDefault 61
+        & rotate3d (90, 0, 0)
+        & translate (0, 61, 0),
       cylinder 1 1 def
     ]
     & translate (-47, 0, 2.5)
