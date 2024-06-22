@@ -13,4 +13,4 @@ import PaniaGuard
 import Washer
 
 main :: IO ()
-main = IveCaster2.run
+main = IveFrontCaster2.run
