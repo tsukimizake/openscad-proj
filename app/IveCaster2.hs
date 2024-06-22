@@ -23,25 +23,25 @@ obj =
    in adapterHull
         `difference` inner
         `difference` (inner & mirror (1, 0, 0))
-        `difference` (boltHoles & rotate3d (0, -5, 0))
-        `difference` (boltHoles & mirror (1, 0, 0) & rotate3d (0, -5, 0))
         `difference` (outerScrewHole & rotate3d (0, -45, 0) & translate (45, 5, 15))
         `difference` (outerScrewHole & rotate3d (0, 45, 0) & translate (-45, 5, 15))
         `difference` (outerScrewHole & rotate3d (0, -45, 0) & translate (45, 55, 15))
         `difference` (outerScrewHole & rotate3d (0, 45, 0) & translate (-45, 55, 15))
-        `mappend` casterSide
+        `mappend` (casterSide & rotate3d (-90, 0, 0) & translate (6, 10, 15))
 
 adapterHull :: Model3d
 adapterHull =
   minkowski
-    [ union
-        [ polygon 3 [[(0, 12), (84, 18), (84, 12), (94, 12), (94, 0), (0, 0)]],
-          polygon 3 [[(0, 12), (10, 25), (30, 12)]],
-          polygon 3 [[(64, 12), (84, 25), (94, 12)]]
-        ]
-        & linearExtrudeDefault 61
-        & rotate3d (90, 0, 0)
-        & translate (0, 61, 0),
+    [ ( union
+          [ polygon 3 [[(0, 12), (94, 12), (94, 0), (0, 0)]],
+            polygon 3 [[(0, 12), (10, 25), (30, 12)]],
+            polygon 3 [[(64, 12), (84, 25), (94, 12)]]
+          ]
+          & linearExtrudeDefault 61
+          & rotate3d (90, 0, 0)
+          & translate (0, 61, 0)
+      )
+        `difference` (box 100 40 30 & translate (0, 10, 12)),
       cylinder 1 1 def
     ]
     & translate (-47, 0, 2.5)
@@ -83,21 +83,6 @@ hookReceiver =
   box 11 7 13
     & translate (0, 43.5, -1)
 
--- pitch: 36mm, 15mm 5M bolt
-boltHoles :: Model3d
-boltHoles =
-  union
-    [ cylinder 30 2.8 def,
-      boltHeadHole & translate (0, 0, 0),
-      cylinder 30 2.8 def & translate (0, 36, 0),
-      boltHeadHole & translate (0, 36, 0)
-    ]
-    & translate (7.5, 19.3, 0)
-
-boltHeadHole :: Model3d
-boltHeadHole =
-  cylinder 12 4.7 def
-
 casterSide :: Model3d
 casterSide =
   ( polygon 3 [[(0, 0), (1, 18.5), (12, 18.5), (13, 0)]]
@@ -114,5 +99,4 @@ casterSide =
 run :: IO ()
 run =
   do
-    pure obj & render & writeFile "ivecaster2.scad"
-    pure casterSide & render & writeFile "ivecaster2-casterside.scad"
+    pure obj & render & writeFile "ivefronteadapter2.scad"
