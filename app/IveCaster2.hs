@@ -27,7 +27,7 @@ obj =
         `difference` (outerScrewHole & rotate3d (0, 45, 0) & translate (-45, 5, 15))
         `difference` (outerScrewHole & rotate3d (0, -45, 0) & translate (45, 55, 15))
         `difference` (outerScrewHole & rotate3d (0, 45, 0) & translate (-45, 55, 15))
-        `mappend` (casterSide & rotate3d (-90, 0, 0) & translate (6, 10, 15))
+        `mappend` (outerAdapter & rotate3d (-90, 0, 90) & translate (17, 37, 15))
 
 adapterHull :: Model3d
 adapterHull =
@@ -83,8 +83,8 @@ hookReceiver =
   box 11 7 13
     & translate (0, 43.5, -1)
 
-casterSide :: Model3d
-casterSide =
+outerAdapter :: Model3d
+outerAdapter =
   ( polygon 3 [[(0, 0), (1, 18.5), (12, 18.5), (13, 0)]]
       & linearExtrudeDefault 34.5
       & rotate3d (0, 0, 180)

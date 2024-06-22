@@ -50,6 +50,7 @@ executable openscad-proj-exe
       HonexCombTest
       IveCaster
       IveCaster2
+      IveFrontCaster2
       IveRearAdapter
       KitchenRack
       LGuard
