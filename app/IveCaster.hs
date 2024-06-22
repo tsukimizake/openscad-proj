@@ -23,8 +23,8 @@ obj =
    in adapterHull
         `difference` inner
         `difference` (inner & mirror (1, 0, 0))
-        `difference` (boltHoles & rotate3d (0, 5, 0))
-        `difference` (boltHoles & mirror (1, 0, 0) & rotate3d (0, 5, 0))
+        `difference` (boltHoles & rotate3d (0, -5, 0))
+        `difference` (boltHoles & mirror (1, 0, 0) & rotate3d (0, -5, 0))
         `difference` (outerScrewHole & rotate3d (0, -45, 0) & translate (45, 5, 15))
         `difference` (outerScrewHole & rotate3d (0, 45, 0) & translate (-45, 5, 15))
         `difference` (outerScrewHole & rotate3d (0, -45, 0) & translate (45, 55, 15))
