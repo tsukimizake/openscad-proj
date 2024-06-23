@@ -49,7 +49,7 @@ executable openscad-proj-exe
       HexCup
       HonexCombTest
       IveCaster
-      IveCaster2
+      IveFrontAdapter2
       IveFrontCaster2
       IveRearAdapter
       KitchenRack

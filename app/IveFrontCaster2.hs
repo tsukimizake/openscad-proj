@@ -23,7 +23,7 @@ obj =
       `mappend` (triangle & rotate3d (0, -7, 0) & translate (0, 0, 23))
       `mappend` (triangle & rotate3d (0, -7, 0) & mirror (1, 0, 0) & translate (0, 0, 23))
       `mappend` (box 180 3 50 & translate (-90, 0, 0))
-      & with minkowski (cylinder 1 1 def)
+      & with minkowski (sphere 0.5 def)
   )
     `difference` catcher
     `difference` pinHole

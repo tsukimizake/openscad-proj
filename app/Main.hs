@@ -1,11 +1,11 @@
 module Main (main) where
 
-import IveFrontCaster2
-import IveCaster2
 import AirClothCap
 import HexCup
 import HonexCombTest
 import IveCaster
+import IveFrontAdapter2
+import IveFrontCaster2
 import IveRearAdapter
 import KitchenRack
 import LGuard

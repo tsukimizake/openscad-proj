@@ -1,4 +1,4 @@
-module IveCaster2 (obj, run) where
+module IveFrontAdapter2 (obj, run) where
 
 import Data.Function ((&))
 import OpenSCAD as OS
