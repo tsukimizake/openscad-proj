@@ -27,7 +27,7 @@ obj =
         `difference` (outerScrewHole & rotate3d (0, 45, 0) & translate (-45, 5, 15))
         `difference` (outerScrewHole & rotate3d (0, -45, 0) & translate (45, 55, 15))
         `difference` (outerScrewHole & rotate3d (0, 45, 0) & translate (-45, 55, 15))
-        `mappend` (outerAdapter & rotate3d (-90, 0, 90) & translate (17, 37, 15))
+        `mappend` (outerAdapter & rotate3d (-90, 0, 0) & translate (6, 12, 15))
 
 adapterHull :: Model3d
 adapterHull =
