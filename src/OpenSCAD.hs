@@ -934,11 +934,15 @@ diam = (/ 2)
 instance Semigroup Model2d where
   Shape (Rectangle 0 0) <> b = b
   a <> Shape (Rectangle 0 0) = a
+  a <> Union bs = union $ a : bs
+  Union as <> b = union $ as ++ [b]
   a <> b = union [a, b]
 
 instance Semigroup Model3d where
   Solid (Box 0 0 0) <> b = b
   a <> Solid (Box 0 0 0) = a
+  a <> Union bs = union $ a : bs
+  Union as <> b = union $ as ++ [b]
   a <> b = union [a, b]
 
 -- Now, let Haskell work it's magic
