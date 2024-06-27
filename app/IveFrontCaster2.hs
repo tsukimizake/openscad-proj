@@ -36,7 +36,7 @@ triangle = polygon 3 [[(0, 0), (0, 22), (90, 0)]] & linearExtrudeDefault 4 & tra
 catcher :: Model3d
 catcher =
   polygon 3 [[(0, 0), (1, 19), (12, 19), (13, 0)]]
-    & linearExtrudeDefault 35
+    & linearExtrudeDefault 35.5
     & rotate3d (0, 0, 180)
     & translate (6.5, 26, 5)
 
