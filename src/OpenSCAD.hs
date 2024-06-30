@@ -594,7 +594,7 @@ linearExtrude ::
 linearExtrude = LinearExtrude
 
 linearExtrudeDefault :: Double -> Model2d -> Model3d
-linearExtrudeDefault h = linearExtrude h 0 (1, 1) 10 10 def
+linearExtrudeDefault h = linearExtrude h 0 (1, 1) 10 3 def
 
 -- | Rotate a 'Model2d' around the origin with @rotate_extrude
 -- /convexity 'Facet' 'Model'/@

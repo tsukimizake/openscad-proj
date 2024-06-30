@@ -22,13 +22,21 @@ obj =
       `mappend` (triangle & rotate3d (0, 7, 0) & mirror (1, 0, 0) & translate (0, 0, 23))
       `mappend` (triangle & rotate3d (0, -7, 0) & translate (0, 0, 23))
       `mappend` (triangle & rotate3d (0, -7, 0) & mirror (1, 0, 0) & translate (0, 0, 23))
-      `mappend` (box 180 3 50 & translate (-90, 0, 0))
+      `mappend` (frame & translate (-90, 0, 0))
       & with minkowski (sphere 0.5 def)
   )
     `difference` catcher
     `difference` pinHole
     `difference` (screwHoles & translate (83, -4, 8))
     `difference` (screwHoles & translate (-70, -4, 8))
+
+frame :: Model3d
+frame =
+  box 180 3 50
+    `mappend` box 5 4 50
+    `mappend` (box 5 4 50 & translate (180 - 4, 0, 0))
+    `mappend` box 180 4 5
+    `mappend` (box 180 4 5 & translate (0, 0, 50 - 4))
 
 triangle :: Model3d
 triangle = polygon 3 [[(0, 0), (0, 22), (90, 0)]] & linearExtrudeDefault 4 & translate (0, 2, 0)
@@ -42,7 +50,7 @@ catcher =
 
 pinHole :: Model3d
 pinHole =
-  cylinder 50 (7 / 2) def & translate (0, 16, 0)
+  cylinder 100 (7 / 2) def & translate (0, 16, -5)
 
 screwHoles :: Model3d
 screwHoles =

@@ -13,4 +13,15 @@ import PaniaGuard
 import Washer
 
 main :: IO ()
-main = IveFrontCaster2.run
+main = do
+  AirClothCap.run
+  HexCup.run
+  HonexCombTest.run
+  IveCaster.run
+  IveFrontAdapter2.run
+  IveFrontCaster2.run
+  IveRearAdapter.run
+  KitchenRack.run
+  LGuard.run
+  PaniaGuard.run
+  Washer.run
