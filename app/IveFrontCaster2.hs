@@ -12,7 +12,7 @@ run = do
 
 obj :: Model3d
 obj =
-  ( ( linearExtrudeDefault 20 (polygon 3 [[(0, 0), (0, 25), (46, 25), (46, 0)]])
+  ( ( linearExtrudeDefault 20 (polygon 3 [[(0, 0), (0, 25), (51, 25), (51, 0)]])
         & rotate3d (0, -90, 0)
         & translate (10, 0, 0)
     )
@@ -43,10 +43,10 @@ triangle = polygon 3 [[(0, 0), (0, 22), (90, 0)]] & linearExtrudeDefault 4 & tra
 
 catcher :: Model3d
 catcher =
-  polygon 3 [[(0, 0), (1, 19), (12, 19), (13, 0)]]
-    & linearExtrudeDefault 35.5
-    & rotate3d (0, 0, 180)
-    & translate (6.5, 26, 5)
+  rectangle 13 35
+    & linearExtrude 19 0 (0.95, 0.95) 10 3 def
+    & rotate3d (90, 0, 0)
+    & translate (-6.5, 26, 7.5)
 
 pinHole :: Model3d
 pinHole =

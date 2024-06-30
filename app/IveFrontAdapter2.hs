@@ -85,16 +85,12 @@ hookReceiver =
 
 outerAdapter :: Model3d
 outerAdapter =
-  ( polygon 3 [[(0, 0), (1, 18.5), (12, 18.5), (13, 0)]]
-      & linearExtrudeDefault 34.5
-      & rotate3d (0, 0, 180)
+  ( rectangle 13 35
+      & linearExtrude 19 0 (0.95, 0.95) 10 3 def
+      & rotate3d (90, 0, 0)
+      & translate (-13, 0, 0)
   )
-    `difference` ( hull
-                     [ cylinder 46 (7 / 2) def & translate (0, 0, 0),
-                       cylinder 46 (7 / 2) def & translate (0, -2, 0)
-                     ]
-                     & translate (-6.5, -10, 0)
-                 )
+    `difference` (cylinder 46 4 def & translate (-6.5, -10, 0))
 
 run :: IO ()
 run =
