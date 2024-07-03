@@ -3,12 +3,12 @@
 module HoneyCombWall (honeyCombCell, honeyCombWall, honeyCombWallHex) where
 
 import Data.Function ((&))
-import Debug.Trace
 import OpenSCAD
-import PathExtrude
 
+cos30 :: Double
 cos30 = sqrt 3 / 2
 
+sin30 :: Double
 sin30 = 1 / 2
 
 honeyCombCell :: Double -> Double -> OpenSCADM Model3d
@@ -16,7 +16,7 @@ honeyCombCell height size =
   do
     let scaler (x, y, z) = (x * size, y * size, z * size)
         crossSection = rectangle height 2
-    declModule "honeyCombCell" $
+    declModule $
       union
         [ stick (0, 0, 0) (scaler (cos30, sin30, 0)) crossSection,
           stick (size * cos30, size * sin30, 0) (size * cos30, size * (1 + sin30), 0) crossSection,

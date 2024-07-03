@@ -206,8 +206,8 @@ module OpenSCAD
   )
 where
 
-import Control.Monad (liftM3)
 import Control.Monad.Freer
+import Control.Monad.Freer.State
 import Control.Monad.Freer.Writer
 import qualified Data.Char as Char
 import Data.Colour (AlphaColour, Colour, alphaChannel, darken, over)
@@ -219,13 +219,13 @@ import qualified Data.Set as Set
 import Prettyprinter ((<+>))
 import qualified Prettyprinter as PP
 
-type OpenSCADM_ v a = Eff '[Writer [(String, Model v)]] a
+type OpenSCADM_ v a = Eff '[State Int, Writer [(String, Model v)]] a
 
 type OpenSCADM a = OpenSCADM_ Vector3d a
 
 -- TODO make v existential
 runOpenSCADM :: OpenSCADM a -> (a, [(String, Model3d)])
-runOpenSCADM = run . runWriter
+runOpenSCADM = run . runWriter . fmap fst . (`runState` 0)
 
 -- A vector in 2 or 3-space. They are used in transformations of
 -- 'Model's of their type.
@@ -902,10 +902,12 @@ facetsToArgs (Facets fa' fs' fn') =
 var :: Facets -> [Model v] -> Model v
 var = Var
 
-declModule :: String -> Model3d -> OpenSCADM Model3d
-declModule name model = do
-  tell [(name, model)]
-  pure $ ref name
+declModule :: Model3d -> OpenSCADM Model3d
+declModule model = do
+  moduleId <- get :: OpenSCADM Int
+  put $ moduleId + 1
+  tell [("userDefinedModule" ++ show moduleId, model)]
+  pure $ ref $ "userDefinedModule" ++ show moduleId
 
 ref :: String -> Model v
 ref = Ref
