@@ -5,6 +5,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# OPTIONS_GHC -Wno-redundant-constraints #-}
 
 -- |
 -- Module      : Graphics.OpenSCAD
@@ -887,8 +888,8 @@ instance PP.Pretty Solid where
           namedArg "invert" $ renderBool i,
           namedArg "convexity" $ PP.pretty c
         ]
-    Screw size head length -> renderAction "screw" [PP.pretty size, namedArg "head" $ PP.pretty head, namedArg "length" $ PP.pretty length]
-    ScrewHole size length hasThread -> renderAction "screw_hole" [PP.pretty size, namedArg "length" $ PP.pretty length, namedArg "thread" $ renderBool hasThread]
+    Screw size hd len -> renderAction "screw" [PP.pretty size, namedArg "head" $ PP.pretty hd, namedArg "length" $ PP.pretty len]
+    ScrewHole size len hasThread -> renderAction "screw_hole" [PP.pretty size, namedArg "length" $ PP.pretty len, namedArg "thread" $ renderBool hasThread]
 
 facetsToArgs :: Facets -> [PP.Doc ann]
 facetsToArgs (Facets fa' fs' fn') =

@@ -23,6 +23,7 @@ library
       HoneyCombWall
       OpenSCAD
       PathExtrude
+      Sketch
   other-modules:
       Paths_openscad_proj
   autogen-modules:
@@ -30,6 +31,18 @@ library
   hs-source-dirs:
       src
   default-extensions:
+      LambdaCase
+      DataKinds
+      FlexibleContexts
+      FlexibleInstances
+      GADTs
+      OverloadedStrings
+      RankNTypes
+      StandaloneDeriving
+      BlockArguments
+      OverloadedRecordDot
+      NoFieldSelectors
+      DuplicateRecordFields
       LambdaCase
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
@@ -63,6 +76,17 @@ executable openscad-proj-exe
       app
   default-extensions:
       LambdaCase
+      DataKinds
+      FlexibleContexts
+      FlexibleInstances
+      GADTs
+      OverloadedStrings
+      RankNTypes
+      StandaloneDeriving
+      BlockArguments
+      OverloadedRecordDot
+      NoFieldSelectors
+      DuplicateRecordFields
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5

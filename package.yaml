@@ -24,6 +24,21 @@ ghc-options:
 - -Wpartial-fields
 - -Wredundant-constraints
 
+
+default-extensions:
+  - LambdaCase
+  - DataKinds
+  - FlexibleContexts 
+  - FlexibleInstances 
+  - GADTs 
+  - OverloadedStrings 
+  - RankNTypes 
+  - StandaloneDeriving 
+  - BlockArguments
+  - OverloadedRecordDot
+  - NoFieldSelectors
+  - DuplicateRecordFields
+
 library:
   source-dirs: src
   default-extensions:
@@ -46,5 +61,3 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - openscad-proj
-    default-extensions:
-    - LambdaCase
