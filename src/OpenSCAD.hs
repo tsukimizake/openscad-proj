@@ -586,16 +586,13 @@ linearExtrude ::
   Vector2d ->
   -- | slices
   Int ->
-  -- | convexity
-  Int ->
-  Facets ->
   -- | to extrude
   Model2d ->
   Model3d
-linearExtrude = LinearExtrude
+linearExtrude height twist scal slices = LinearExtrude height twist scal slices 0 def
 
 linearExtrudeDefault :: Double -> Model2d -> Model3d
-linearExtrudeDefault h = linearExtrude h 0 (1, 1) 10 3 def
+linearExtrudeDefault h = linearExtrude h 0 (1, 1) 10
 
 -- | Rotate a 'Model2d' around the origin with @rotate_extrude
 -- /convexity 'Facet' 'Model'/@
@@ -632,7 +629,7 @@ rotate3d :: Vector3d -> Model3d -> Model3d
 rotate3d = Rotate3d
 
 -- | Translate a 'Model' along a 'Vector'.
-translate :: Vector3d -> Model3d -> Model3d
+translate :: (Vector v) => v -> Model v -> Model v
 translate = Translate
 
 -- | Mirror a 'Model' across a plane intersecting the origin.

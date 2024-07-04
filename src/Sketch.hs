@@ -14,7 +14,7 @@ import Control.Monad.Freer.State (State, get, put, runState)
 import Control.Monad.Freer.StateRW
 import Control.Monad.Freer.Writer (runWriter)
 import Data.Function ((&))
-import OpenSCAD (Model2d, OpenSCADM, union)
+import OpenSCAD (Model2d, OpenSCADM, translate, union)
 
 type Angle = Double
 
@@ -185,4 +185,9 @@ obj = do
   ~(Right pita1) <- pitagoras1
   ~(Right pita2) <- pitagoras2
   ~(Right iso) <- isoceles
-  pure $ union [pita1, pita2, iso]
+  pure $
+    union
+      [ pita1,
+        translate (10, 0) pita2,
+        iso
+      ]

@@ -44,7 +44,7 @@ triangle = polygon 3 [[(0, 0), (0, 22), (90, 0)]] & linearExtrudeDefault 4 & tra
 catcher :: Model3d
 catcher =
   rectangle 13 35
-    & linearExtrude 19 0 (0.95, 0.95) 10 3 def
+    & linearExtrude 19 0 (0.95, 0.95) 10
     & rotate3d (90, 0, 0)
     & translate (-6.5, 26, 7.5)
 

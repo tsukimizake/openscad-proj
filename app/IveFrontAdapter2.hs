@@ -86,7 +86,7 @@ hookReceiver =
 outerAdapter :: Model3d
 outerAdapter =
   ( rectangle 13 35
-      & linearExtrude 19 0 (0.95, 0.95) 10 3 def
+      & linearExtrude 19 0 (0.95, 0.95) 10
       & rotate3d (90, 0, 0)
       & translate (-13, 0, 0)
   )
