@@ -189,5 +189,5 @@ obj = do
     union
       [ pita1,
         translate (10, 0) pita2,
-        iso
+        translate (20, 0) iso
       ]
