@@ -12,8 +12,10 @@ module Sketch (Sketch, wrapShape, sketch, point, x, y, line, from, degree, inter
 import Control.Monad.Freer
 import Control.Monad.Freer.State (State, get, put, runState)
 import Control.Monad.Freer.StateRW
-import Control.Monad.Freer.Writer (runWriter)
+import Control.Monad.Freer.Writer (runWriter, tell)
 import Data.Function ((&))
+import Data.Set (Set, singleton)
+import qualified Data.Set as Set
 import OpenSCAD (Model2d, OpenSCADM, translate, union)
 
 type Angle = Double
@@ -24,30 +26,30 @@ data Sketch
   = P Point
   | LineFunc Line
   | Poly Polygon
-  deriving (Show)
+  deriving (Show, Eq, Ord)
 
 class Shape a where
   wrapShape :: a -> Sketch
 
 data Point = Point {x :: Id, y :: Id}
-  deriving (Show)
+  deriving (Show, Eq, Ord)
 
 instance Shape Point where
   wrapShape = P
 
 data Line = Line {x :: Id, y :: Id, angle :: Id}
-  deriving (Show)
+  deriving (Show, Eq, Ord)
 
 instance Shape Line where
   wrapShape = LineFunc
 
 newtype Polygon = Polygon [Point]
-  deriving (Show)
+  deriving (Show, Eq, Ord)
 
 instance Shape Polygon where
   wrapShape = Poly
 
-type SketchM = Eff '[State Id, Writer [Constraint]]
+type SketchM = Eff '[State Id, Writer (Set Constraint)]
 
 data Error
   = Contradiction String
@@ -58,13 +60,13 @@ data Constraint
   = Exact Id Double
   | Eq Id Id
   | OnLine Point Line
-  deriving (Show)
+  deriving (Show, Eq, Ord)
 
-putExact :: Id -> Double -> Eff [State Id, Writer [Constraint]] ()
-putExact id v = tell [Exact id v]
+putExact :: Id -> Double -> Eff [State Id, Writer (Set Constraint)] ()
+putExact id v = tell (Set.singleton (Exact id v))
 
-putEq :: Id -> Id -> Eff [State Id, Writer [Constraint]] ()
-putEq id1 id2 = tell [Eq id1 id2]
+putEq :: Id -> Id -> Eff [State Id, Writer (Set Constraint)] ()
+putEq id1 id2 = tell (Set.singleton (Eq id1 id2))
 
 --- SOLVER
 
@@ -86,7 +88,7 @@ genId = do
   put (i + 1)
   pure i
 
-solveConstraints :: (Sketch, [Constraint]) -> Sketch
+solveConstraints :: (Sketch, Set Constraint) -> Sketch
 solveConstraints = undefined
 
 validateAllJust :: Sketch -> Either Error Sketch
@@ -139,7 +141,7 @@ polygon = undefined
 
 onLine :: Point -> Line -> SketchM ()
 onLine p l = do
-  tell [OnLine p l]
+  tell (Set.singleton (OnLine p l))
 
 intersection :: Line -> Line -> SketchM Point
 intersection l1 l2 = do
