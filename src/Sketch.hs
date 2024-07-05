@@ -138,8 +138,8 @@ polygon = undefined
 --- INTERSECTION
 
 onLine :: Point -> Line -> SketchM ()
-onLine (Point px py) (Line lx ly angle) = do
-  undefined
+onLine p l = do
+  tell [OnLine p l]
 
 intersection :: Line -> Line -> SketchM Point
 intersection l1 l2 = do
