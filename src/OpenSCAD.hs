@@ -612,12 +612,12 @@ importFile = Import
 -- Transformations
 
 -- | Scale a 'Model', the vector specifying the scale factor for each axis.
-scale :: (Vector v) => v -> Model v -> Model v
+scale :: Vector v => v -> Model v -> Model v
 scale = Scale
 
 -- | Resize a 'Model' to occupy the dimensions given by the vector. Note that
 -- this does nothing prior to the 2014 versions of OpenSCAD.
-resize :: (Vector v) => v -> Model v -> Model v
+resize :: Vector v => v -> Model v -> Model v
 resize = Resize
 
 -- | Rotate a 'Model' around the z-axis
@@ -640,7 +640,7 @@ mirror = Mirror
 -- OpenSCAD color model, but instead uses the 'Data.Colour' model. The
 -- 'Graphics.OpenSCAD' module rexports 'Data.Colour.Names' so you can
 -- conveniently say @'color' 'red' /'Model'/@.
-color :: (Vector v) => Colour Double -> Model v -> Model v
+color :: Vector v => Colour Double -> Model v -> Model v
 color = Color
 
 -- | Render a 'Model' in a transparent color. This uses the
