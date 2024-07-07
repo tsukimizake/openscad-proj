@@ -25,17 +25,17 @@ where
 
 import Control.Monad.Freer
 import Control.Monad.Freer.State
-import Control.Monad.Freer.Writer (Writer, runWriter, tell)
+import Control.Monad.Freer.Writer (runWriter, tell)
 import Data.Function ((&))
 import OpenSCAD (Model2d)
 import SketchSolver (runSolver)
 import SketchTypes
 import Prelude hiding (id)
 
-putExact :: Id -> Double -> Eff [State Id, Writer [Constraint]] ()
+putExact :: Id -> Double -> SketchM ()
 putExact id v = tell [Exact id v]
 
-putEq :: Id -> Id -> Eff [State Id, Writer [Constraint]] ()
+putEq :: Id -> Id -> SketchM ()
 putEq id1 id2 = tell [Eq id1 id2]
 
 --- SOLVER
@@ -54,7 +54,7 @@ genId :: SketchM Id
 genId = do
   i <- get
   put (i + 1)
-  pure i
+  pure $ Id i
 
 --- POINT
 

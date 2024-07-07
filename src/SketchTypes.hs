@@ -1,3 +1,4 @@
+{-# LANGUAGE GeneralizedNewtypeDeriving #-}
 {-# OPTIONS_GHC -Wno-missing-export-lists #-}
 
 module SketchTypes where
@@ -6,11 +7,15 @@ import Control.Monad.Freer
 import Control.Monad.Freer.State
 import Control.Monad.Freer.Writer
 
-type SketchM = Eff '[State Id, Writer [Constraint]]
+type SketchM = Eff '[State Int, Writer [Constraint]]
 
 type Angle = Double
 
-type Id = Int
+newtype Id = Id Int
+  deriving (Eq, Ord)
+
+instance Show Id where
+  show (Id i) = "id" ++ show i
 
 data Sketch
   = P Point
