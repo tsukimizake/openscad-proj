@@ -8,89 +8,65 @@ module Main where
 
 import Data.Either (isRight)
 import Data.Function ((&))
-import OpenSCAD (Model2d, OpenSCADM, translate, union)
+import Debug.Trace
+import OpenSCAD
 import Sketch
 import SketchTypes
 import Test.Hspec
 
-rect :: (Either SketchError Model2d)
-rect = sketch do
-  a <- point & x 0 & y 0
-  b <- point & x 4 & y 0
-  c <- point & x 4 & y 4
-  d <- point & x 0 & y 4
-  poly [a, b, c, d]
-
-eqSpec :: (Either SketchError Model2d)
-eqSpec = sketch do
-  a <- point & x 0 & y 0
-  b <- point & x 4
-  c <- point
-  d <- point & y 4
-  putEq a.y b.y
-  putEq a.x d.x
-  putEq c.x b.x
-  putEq c.y d.y
-  poly [a, b, c, d]
-
-pitagoras1 :: (Either SketchError Model2d)
-pitagoras1 = sketch do
-  a <- point & x 0 & y 0
-  b <- point & x 4 & y 0
-  v1 <- line & from a & degree 30
-  v2 <- line & from b & degree 90
-  c <- intersection v1 v2
-  poly [a, b, c]
-
-pitagoras2 :: (Either SketchError Model2d)
-pitagoras2 = sketch do
-  a <- point & x 0 & y 0
-  b <- point & x 4 -- y is not set, but solved with constraints
-  v1 <- line & from a & degree 0
-  onLine b v1
-  v2 <- line & from a & degree 30
-  v3 <- line & from b & degree 90
-  c <- intersection v2 v3
-  _ <- pure c & x 4 & y 3
-  poly [a, b, c]
-
-isoceles :: (Either SketchError Model2d)
-isoceles = sketch do
-  a <- point & x 0 & y 0
-  b <- point & x 4 & y 0
-  v1 <- line & from a & degree 40
-  v2 <- line & from b & degree 140
-  c <- intersection v1 v2
-  poly [a, b, c]
-
-example :: OpenSCADM Model2d
-example = do
-  let ~(Right recte) = rect
-  let ~(Right pita1) = pitagoras1
-  let ~(Right pita2) = pitagoras2
-  let ~(Right iso) = isoceles
-  pure $
-    union
-      [ recte,
-        pita1 & OpenSCAD.translate (0, 10),
-        OpenSCAD.translate (20, 0) pita2,
-        OpenSCAD.translate (30, 0) iso
-      ]
-
 main :: IO ()
 main = hspec $ do
   describe "SketchExamples" $ do
-    it "rect should be Right" $
-      rect `shouldSatisfy` isRight
+    it "rect" do
+      let rect = sketch do
+            a <- point & x 0 & y 0
+            b <- point & x 4 & y 0
+            c <- point & x 4 & y 4
+            d <- point & x 0 & y 4
+            poly [a, b, c, d]
+      rect `shouldBe` (Right $ polygon 3 [[(0, 0), (4, 0), (4, 4), (0, 4)]])
 
-    it "eqSpec should be Right" $
-      eqSpec `shouldSatisfy` isRight
+    it "eqSpec" do
+      let eqSpec = sketch do
+            a <- point & x 0 & y 0
+            b <- point & x 4
+            c <- point & x 8
+            d <- point & y 4
+            putEq a.y b.y
+            putEq a.x d.x
+            putEq c.y b.y
+            poly [a, b, c, d]
+      eqSpec `shouldBe` (Right $ polygon 3 [[(0.0, 0.0), (4.0, 0.0), (8.0, 0.0), (0.0, 4.0)]])
 
-    it "pitagoras1 should be Right" $
+    it "pitagoras1 should be Right" do
+      let pitagoras1 = sketch do
+            a <- point & x 0 & y 0
+            b <- point & x 4 & y 0
+            v1 <- line & from a & degree 30
+            v2 <- line & from b & degree 90
+            c <- intersect v1 v2
+            poly [a, b, c]
       pitagoras1 `shouldSatisfy` isRight
 
-    it "pitagoras2 should be Right" $
+    it "pitagoras2 should be Right" do
+      let pitagoras2 = sketch do
+            a <- point & x 0 & y 0
+            b <- point & x 4 -- y is not set, but solved with constraints
+            v1 <- line & from a & degree 0
+            onLine b v1
+            v2 <- line & from a & degree 30
+            v3 <- line & from b & degree 90
+            c <- intersect v2 v3
+            _ <- pure c & x 4 & y 3
+            poly [a, b, c]
       pitagoras2 `shouldSatisfy` isRight
 
-    it "isoceles should be Right" $
+    it "isoceles should be Right" do
+      let isoceles = sketch do
+            a <- point & x 0 & y 0
+            b <- point & x 4 & y 0
+            v1 <- line & from a & degree 40
+            v2 <- line & from b & degree 140
+            c <- intersect v1 v2
+            poly [a, b, c]
       isoceles `shouldSatisfy` isRight

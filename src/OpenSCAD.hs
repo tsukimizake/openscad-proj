@@ -304,11 +304,11 @@ data Facets = Facets
     facetFs :: Maybe Double,
     facetFn :: Maybe Int
   }
-  deriving (Show)
+  deriving (Show, Eq)
 
 -- | A 'Join' controls how edges in a 'polygon' are joined by the
 -- 'offset' operation.
-data Join = Bevel | Round | Miter Double deriving (Show)
+data Join = Bevel | Round | Miter Double deriving (Show, Eq)
 
 -- | A 'Shape' is a 2-dimensional primitive to be used in a 'Model2d'.
 data Shape
@@ -316,10 +316,10 @@ data Shape
   | Circle Double Facets
   | Polygon Int [Vector2d] [[Int]]
   | Text String TextConfig
-  deriving (Show)
+  deriving (Show, Eq)
 
 -- | The third argument to unsafePolyhedron is a 'Sides'.
-data Sides = Faces [[Int]] | Triangles [[Int]] deriving (Show)
+data Sides = Faces [[Int]] | Triangles [[Int]] deriving (Show, Eq)
 
 data TextHAlign = HLeft | HCenter | HRight
   deriving (Eq, Show)
@@ -366,18 +366,18 @@ data Solid
   | Surface FilePath Bool Int
   | Screw ScrewSize ScrewHead Int
   | ScrewHole ScrewSize Int Bool
-  deriving (Show)
+  deriving (Show, Eq)
 
 -- | ISO only
 data ScrewSize = M2 | M3 | M4 | M5 | M6 | M8 | M10 | M12 | M16 | M18 | M20
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance PP.Pretty ScrewSize where
   pretty = PP.unsafeViaShow . show
 
 -- | ISO only
 data ScrewHead = None | Hex | Socket | Button | Flat | FlatSharp | Pan | Cheese
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance PP.Pretty ScrewHead where
   pretty = PP.unsafeViaShow . map Char.toLower . show
@@ -416,8 +416,10 @@ data Model v where
   Ref :: String -> Model v
   Child :: Direction -> Model v -> Model v -> Model v
 
+deriving instance (Eq v) => Eq (Model v)
+
 data Direction = Left | Right | Up | Down | Forward | Backward
-  deriving (Show)
+  deriving (Show, Eq)
 
 instance PP.Pretty Direction where
   pretty = PP.unsafeViaShow . map Char.toLower . show
