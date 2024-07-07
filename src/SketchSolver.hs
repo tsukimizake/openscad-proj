@@ -1,14 +1,13 @@
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-{-# HLINT ignore "Use infix" #-}
+{-# OPTIONS_GHC -Wno-unrecognisepointd-pragmas #-}
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
 module SketchSolver (runSolver) where
 
+import Control.Applicative (liftA3)
 import Control.Monad.Freer
 import Control.Monad.Freer.Error
 import Control.Monad.Freer.Reader (Reader, ask, runReader)
 import Control.Monad.Freer.State
-import Control.Monad.Freer.State (State, get, modify, put, runState)
 import Data.Function ((&))
 import Data.Maybe (mapMaybe)
 import OpenSCAD (Model2d)
@@ -50,11 +49,16 @@ applyConstraint (OnLine (Point x y) (Line lx ly angle)) = do
 
 validateAllJust :: Sketch -> SolverM Sketch
 validateAllJust sk@(P (Point x y)) = do
-  exx <- isSolved x
-  exy <- isSolved y
-  if exx && exy
-    then pure $ sk
-    else throwError (Unresolved $ show sk)
+  liftA2 (,) (isSolved x) (isSolved y) >>= \case
+    (True, True) -> pure sk
+    _ -> throwError (Unresolved $ show sk)
+validateAllJust sk@(LineFunc (Line lx ly angle)) = do
+  liftA3 (,,) (isSolved lx) (isSolved ly) (isSolved angle) >>= \case
+    (True, True, True) -> pure sk
+    _ -> throwError (Unresolved $ show sk)
+validateAllJust sk@(Poly (Polygon ps)) = do
+  _ <- ps & mapM (validateAllJust . P)
+  pure sk
 
 isSolved :: Id -> SolverM Bool
 isSolved id = do
