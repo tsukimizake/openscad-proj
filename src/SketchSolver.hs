@@ -13,6 +13,8 @@ import Control.Monad.Freer.State
 import Data.Function ((&))
 import qualified Data.List as List
 import Data.Maybe (mapMaybe)
+import qualified Data.Maybe as Maybe
+import Debug.Trace (traceShowId, traceShowM)
 import OpenSCAD (Model2d, polygon)
 import SketchTypes
 import UnionFind (UnionFind, emptyUF, find, union)
@@ -41,21 +43,21 @@ runSolver (sk, cs) =
 generateModel :: Sketch -> SolverM Model2d
 generateModel (Poly (Polygon ps)) =
   do
-    let pointPaths = List.zip ps (drop 1 ps)
-    xs <- forM pointPaths do
-      ( \(Point x1 y1, Point x2 y2) -> do
-          x1' <- getValue x1
-          y1' <- getValue y1
-          x2' <- getValue x2
-          y2' <- getValue y2
-          pure [(x1', y1'), (x2', y2')]
+    rs <-
+      forM
+        ps
+        ( \(Point x y) -> do
+            x1' <- getValue x >>= assertJust
+            y1' <- getValue y >>= assertJust
+            pure (x1', y1')
         )
-    pure $ polygon 3 xs
+    pure $ polygon 3 [rs]
 generateModel _ = undefined
 
 solveConstraints :: SolverM Sketch
 solveConstraints = do
   (uf, onLines, exacts, eqs, sk) <- readStat
+  traceShowM eqs
   mapM_ (uncurry unifyIds) eqs
   pure sk
 
@@ -74,8 +76,7 @@ validateAllJust sk@(Poly (Polygon ps)) = do
 
 isSolved :: Id -> SolverM Bool
 isSolved id = do
-  (uf, _, _, _, _) <- readStat
-  pure $ find id uf == id
+  getValue id & fmap Maybe.isJust
 
 readStat :: SolverM (UnionFind, OnLines, Exacts, Eqs, Sketch)
 readStat = do
@@ -86,19 +87,31 @@ readStat = do
 unifyIds :: Id -> Id -> SolverM ()
 unifyIds l r = do
   liftA2 (,) (parentIsExact l) (parentIsExact r) >>= \case
-    (True, False) -> updateUf l r
-    (False, True) -> updateUf r l
-    (True, True) -> throwError (Contradiction $ show l ++ " " ++ show r)
+    (True, False) -> do
+      traceShowM ("l is exact", l)
+      updateUf l r
+    (False, True) -> do
+      traceShowM ("r is exact", r)
+      updateUf r l
+    (True, True) -> do
+      lv <- getValue l
+      rv <- getValue r
+      if lv == rv
+        then pure ()
+        else throwError (Contradiction $ "Exact values are not equal: " ++ show lv ++ " != " ++ show rv)
     _ -> error "should not happen"
 
 -- helpers
-getValue :: Id -> SolverM Double
+getValue :: Id -> SolverM (Maybe Double)
 getValue id = do
   (uf, _, exacts, _, _) <- readStat
   case find id uf of
-    parent -> case lookup parent exacts of
-      Just v -> pure v
-      _ -> error "should not happen"
+    parent -> pure $ lookup parent exacts
+
+assertJust :: Maybe a -> SolverM a
+assertJust = \case
+  Just a -> pure a
+  _ -> error "value is not resolved"
 
 parentIsExact :: Id -> SolverM Bool
 parentIsExact id = do

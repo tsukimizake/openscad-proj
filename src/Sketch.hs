@@ -6,13 +6,27 @@
 {-# OPTIONS_GHC -Wno-missing-export-lists #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
-module Sketch (Sketch, wrapShape, sketch, point, x, y, line, from, degree, intersection) where
+module Sketch
+  ( Sketch,
+    wrapShape,
+    sketch,
+    point,
+    x,
+    y,
+    line,
+    from,
+    degree,
+    intersection,
+    polygon,
+    putEq, -- exported for debug
+  )
+where
 
 import Control.Monad.Freer
 import Control.Monad.Freer.State
 import Control.Monad.Freer.Writer (Writer, runWriter, tell)
 import Data.Function ((&))
-import OpenSCAD (Model2d, OpenSCADM, rectangle, translate, union)
+import OpenSCAD (Model2d)
 import SketchSolver (runSolver)
 import SketchTypes
 import Prelude hiding (id)
@@ -79,14 +93,14 @@ degree val m = do
   putExact l.angle val
   pure l
 
+onLine :: Point -> Line -> SketchM ()
+onLine p l = tell [OnLine p l]
+
 --- POLYGON
 polygon :: [Point] -> SketchM Polygon
 polygon = pure . Polygon
 
 --- INTERSECTION
-
-onLine :: Point -> Line -> SketchM ()
-onLine p l = tell [OnLine p l]
 
 intersection :: Line -> Line -> SketchM Point
 intersection l1 l2 = do

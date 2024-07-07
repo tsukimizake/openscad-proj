@@ -71,6 +71,7 @@ executable openscad-proj-exe
       KitchenRack
       LGuard
       PaniaGuard
+      SketchTry
       Washer
       Paths_openscad_proj
   autogen-modules:
