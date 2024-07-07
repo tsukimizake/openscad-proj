@@ -17,7 +17,7 @@ module Sketch
     onLine,
     from,
     degree,
-    intersect,
+    intersectionPoint,
     poly,
     putEq, -- exported for debug
   )
@@ -101,10 +101,10 @@ onLine p l = tell [OnLine p l]
 poly :: [Point] -> SketchM Polygon
 poly = pure . Polygon
 
---- INTERSECTION
+--- INTERSECTION POINT
 
-intersect :: Line -> Line -> SketchM Point
-intersect l1 l2 = do
+intersectionPoint :: Line -> Line -> SketchM Point
+intersectionPoint l1 l2 = do
   p <- point
   onLine p l1
   onLine p l2

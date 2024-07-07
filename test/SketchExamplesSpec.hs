@@ -44,7 +44,7 @@ main = hspec $ do
             b <- point & x 4 & y 0
             v1 <- line & from a & degree 30
             v2 <- line & from b & degree 90
-            c <- intersect v1 v2
+            c <- intersectionPoint v1 v2
             poly [a, b, c]
       pitagoras1 `shouldSatisfy` isRight
 
@@ -56,7 +56,7 @@ main = hspec $ do
             onLine b v1
             v2 <- line & from a & degree 30
             v3 <- line & from b & degree 90
-            c <- intersect v2 v3
+            c <- intersectionPoint v2 v3
             _ <- pure c & x 4 & y 3
             poly [a, b, c]
       pitagoras2 `shouldSatisfy` isRight
@@ -67,6 +67,6 @@ main = hspec $ do
             b <- point & x 4 & y 0
             v1 <- line & from a & degree 40
             v2 <- line & from b & degree 140
-            c <- intersect v1 v2
+            c <- intersectionPoint v1 v2
             poly [a, b, c]
       isoceles `shouldSatisfy` isRight
