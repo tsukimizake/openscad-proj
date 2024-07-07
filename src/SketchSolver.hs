@@ -15,7 +15,7 @@ import SketchTypes
 import UnionFind (UnionFind, emptyUF, find, union)
 import Prelude hiding (id)
 
-type SolverM = Eff '[Reader (OnLines, Exacts), State UnionFind, Error SketchError]
+type SolverM = Eff '[State UnionFind, Reader (OnLines, Exacts), Error SketchError]
 
 type OnLines = [(Point, Line)]
 
@@ -25,8 +25,9 @@ runSolver :: (Sketch, [Constraint]) -> Either SketchError Model2d
 runSolver (sk, cs) =
   let onLines = mapMaybe (\case OnLine p l -> Just (p, l); _ -> Nothing) cs
       exacts = mapMaybe (\case Exact id v -> Just (id, v); _ -> Nothing) cs
-   in runReader (onLines, exacts) (solveConstraints sk >>= validateAllJust)
-        & (runState emptyUF)
+   in (solveConstraints sk >>= validateAllJust)
+        & runState emptyUF
+        & runReader (onLines, exacts)
         & fmap fst
         & runError
         & run
@@ -37,15 +38,6 @@ generateModel = undefined
 
 solveConstraints :: Sketch -> SolverM Sketch
 solveConstraints _sketch = undefined
-
-applyConstraint :: Constraint -> SolverM ()
-applyConstraint (Exact id _) = do
-  uf <- get
-  let root = find id uf
-  modify (id `union` root)
-applyConstraint (Eq id1 id2) = modify (id1 `union` id2)
-applyConstraint (OnLine (Point x y) (Line lx ly angle)) = do
-  undefined
 
 validateAllJust :: Sketch -> SolverM Sketch
 validateAllJust sk@(P (Point x y)) = do
