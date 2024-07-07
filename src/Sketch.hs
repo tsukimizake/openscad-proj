@@ -14,10 +14,11 @@ module Sketch
     x,
     y,
     line,
+    onLine,
     from,
     degree,
     intersection,
-    polygon,
+    poly,
     putEq, -- exported for debug
   )
 where
@@ -97,8 +98,8 @@ onLine :: Point -> Line -> SketchM ()
 onLine p l = tell [OnLine p l]
 
 --- POLYGON
-polygon :: [Point] -> SketchM Polygon
-polygon = pure . Polygon
+poly :: [Point] -> SketchM Polygon
+poly = pure . Polygon
 
 --- INTERSECTION
 

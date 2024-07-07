@@ -18,7 +18,7 @@ obj = do
           putEq a.x d.x
           putEq c.x b.x
           putEq c.y d.y
-          Sketch.polygon [a, b, c, d]
+          poly [a, b, c, d]
   pure $ linearExtrudeDefault 1 r
 
 run :: IO ()

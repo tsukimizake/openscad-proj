@@ -6,12 +6,12 @@
 {-# OPTIONS_GHC -Wno-missing-export-lists #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
-module SketchExamplesSpec where
+module Main where
 
 import Data.Either (isRight)
+import Data.Function ((&))
 import OpenSCAD (Model2d, OpenSCADM, translate, union)
-import Sketch (SketchM, degree, from, intersection, line, point, sketch, x, y)
-import SketchExamples (isoceles, pitagoras1, pitagoras2, rect)
+import Sketch
 import SketchTypes (SketchError)
 import Test.Hspec
 
@@ -21,7 +21,7 @@ rect = sketch do
   b <- point & x 4 & y 0
   c <- point & x 4 & y 4
   d <- point & x 0 & y 4
-  polygon [a, b, c, d]
+  poly [a, b, c, d]
 
 pitagoras1 :: (Either SketchError Model2d)
 pitagoras1 = sketch do
@@ -30,7 +30,7 @@ pitagoras1 = sketch do
   v1 <- line & from a & degree 30
   v2 <- line & from b & degree 90
   c <- intersection v1 v2
-  polygon [a, b, c]
+  poly [a, b, c]
 
 pitagoras2 :: (Either SketchError Model2d)
 pitagoras2 = sketch do
@@ -42,7 +42,7 @@ pitagoras2 = sketch do
   v3 <- line & from b & degree 90
   c <- intersection v2 v3
   _ <- pure c & x 4 & y 3
-  polygon [a, b, c]
+  poly [a, b, c]
 
 isoceles :: (Either SketchError Model2d)
 isoceles = sketch do
@@ -51,7 +51,7 @@ isoceles = sketch do
   v1 <- line & from a & degree 40
   v2 <- line & from b & degree 140
   c <- intersection v1 v2
-  polygon [a, b, c]
+  poly [a, b, c]
 
 example :: OpenSCADM Model2d
 example = do

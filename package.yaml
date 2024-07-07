@@ -61,3 +61,15 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - openscad-proj
+tests:
+  sketch-test:
+    main:                SketchExamplesSpec.hs
+    source-dirs:         test
+    ghc-options:
+    - -threaded
+    - -rtsopts
+    - -with-rtsopts=-N
+    dependencies:
+    - openscad-proj
+    - hspec
+
