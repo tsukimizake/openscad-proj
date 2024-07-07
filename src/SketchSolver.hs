@@ -96,7 +96,8 @@ unifyIds l r = do
       if lv == rv
         then pure ()
         else throwError (Contradiction $ "Exact values are not equal: " ++ show lv ++ " != " ++ show rv)
-    _ -> error "should not happen"
+    (False, False) -> do
+      pure ()
 
 -- helpers
 getValue :: Id -> SolverM (Maybe Double)

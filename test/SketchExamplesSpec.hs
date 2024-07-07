@@ -57,7 +57,6 @@ main = hspec $ do
             v2 <- line & from a & degree 30
             v3 <- line & from b & degree 90
             c <- intersectionPoint v2 v3
-            _ <- pure c & x 4 & y 3
             poly [a, b, c]
       pitagoras2 `shouldSatisfy` isRight
 
