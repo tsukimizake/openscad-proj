@@ -174,7 +174,7 @@ module OpenSCAD
     resize,
     rotate2d,
     rotate3d,
-    translate,
+    OpenSCAD.translate,
     mirror,
     color,
     transparent,
@@ -226,7 +226,7 @@ type OpenSCADM a = OpenSCADM_ Vector3d a
 
 -- TODO make v existential
 runOpenSCADM :: OpenSCADM a -> (a, [(String, Model3d)])
-runOpenSCADM = run . runWriter . fmap fst . (`runState` 0)
+runOpenSCADM = run . runWriter . fmap fst . (runState 0)
 
 -- A vector in 2 or 3-space. They are used in transformations of
 -- 'Model's of their type.
@@ -612,12 +612,12 @@ importFile = Import
 -- Transformations
 
 -- | Scale a 'Model', the vector specifying the scale factor for each axis.
-scale :: Vector v => v -> Model v -> Model v
+scale :: (Vector v) => v -> Model v -> Model v
 scale = Scale
 
 -- | Resize a 'Model' to occupy the dimensions given by the vector. Note that
 -- this does nothing prior to the 2014 versions of OpenSCAD.
-resize :: Vector v => v -> Model v -> Model v
+resize :: (Vector v) => v -> Model v -> Model v
 resize = Resize
 
 -- | Rotate a 'Model' around the z-axis
@@ -640,7 +640,7 @@ mirror = Mirror
 -- OpenSCAD color model, but instead uses the 'Data.Colour' model. The
 -- 'Graphics.OpenSCAD' module rexports 'Data.Colour.Names' so you can
 -- conveniently say @'color' 'red' /'Model'/@.
-color :: Vector v => Colour Double -> Model v -> Model v
+color :: (Vector v) => Colour Double -> Model v -> Model v
 color = Color
 
 -- | Render a 'Model' in a transparent color. This uses the
@@ -650,7 +650,7 @@ transparent = Transparent
 
 -- | A 'translate' that just goes up, since those seem to be common.
 up :: Double -> Model3d -> Model3d
-up f = translate (0, 0, f)
+up f = OpenSCAD.translate (0, 0, f)
 
 -- Combinations
 

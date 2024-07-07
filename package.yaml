@@ -46,7 +46,7 @@ library:
   dependencies:
   - linear
   - lens
-  - freer
+  - freer-simple
   - colour
   - containers
   - prettyprinter

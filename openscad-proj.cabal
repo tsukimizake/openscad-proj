@@ -24,6 +24,9 @@ library
       OpenSCAD
       PathExtrude
       Sketch
+      SketchSolver
+      SketchTypes
+      UnionFind
   other-modules:
       Paths_openscad_proj
   autogen-modules:
@@ -49,7 +52,7 @@ library
       base >=4.7 && <5
     , colour
     , containers
-    , freer
+    , freer-simple
     , lens
     , linear
     , prettyprinter
