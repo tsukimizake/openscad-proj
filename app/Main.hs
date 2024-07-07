@@ -1,5 +1,6 @@
 module Main (main) where
 
+import SketchTry
 import AirClothCap
 import HexCup
 import HonexCombTest
@@ -25,3 +26,4 @@ main = do
   LGuard.run
   PaniaGuard.run
   Washer.run
+  SketchTry.run

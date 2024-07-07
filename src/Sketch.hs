@@ -6,14 +6,13 @@
 {-# OPTIONS_GHC -Wno-missing-export-lists #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
-module Sketch (Sketch, wrapShape, sketch, point, x, y, line, from, degree, intersection, example) where
+module Sketch (Sketch, wrapShape, sketch, point, x, y, line, from, degree, intersection) where
 
 import Control.Monad.Freer
 import Control.Monad.Freer.State
-import Control.Monad.Freer.State (State, get, put, runState)
 import Control.Monad.Freer.Writer (Writer, runWriter, tell)
 import Data.Function ((&))
-import OpenSCAD (Model2d, OpenSCADM, translate, union)
+import OpenSCAD (Model2d, OpenSCADM, rectangle, translate, union)
 import SketchSolver (runSolver)
 import SketchTypes
 import Prelude hiding (id)
@@ -95,45 +94,3 @@ intersection l1 l2 = do
   onLine p l1
   onLine p l2
   pure p
-
-pitagoras1 :: (Either SketchError Model2d)
-pitagoras1 = sketch do
-  a <- point & x 0 & y 0
-  b <- point & x 4 & y 0
-  v1 <- line & from a & degree 30
-  v2 <- line & from b & degree 90
-  c <- intersection v1 v2
-  polygon [a, b, c]
-
-pitagoras2 :: (Either SketchError Model2d)
-pitagoras2 = sketch do
-  a <- point & x 0 & y 0
-  b <- point & x 4 -- y is not set, but solved with constraints
-  v1 <- line & from a & degree 0
-  onLine b v1
-  v2 <- line & from a & degree 30
-  v3 <- line & from b & degree 90
-  c <- intersection v2 v3
-  _ <- pure c & x 4 & y 3
-  polygon [a, b, c]
-
-isoceles :: (Either SketchError Model2d)
-isoceles = sketch do
-  a <- point & x 0 & y 0
-  b <- point & x 4 & y 0
-  v1 <- line & from a & degree 40
-  v2 <- line & from b & degree 140
-  c <- intersection v1 v2
-  polygon [a, b, c]
-
-example :: OpenSCADM Model2d
-example = do
-  let ~(Right pita1) = pitagoras1
-  let ~(Right pita2) = pitagoras2
-  let ~(Right iso) = isoceles
-  pure $
-    union
-      [ pita1,
-        OpenSCAD.translate (10, 0) pita2,
-        OpenSCAD.translate (20, 0) iso
-      ]

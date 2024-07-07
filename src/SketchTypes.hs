@@ -39,6 +39,7 @@ instance Shape Polygon where
 data SketchError
   = Contradiction String
   | Unresolved String
+  deriving (Show, Eq, Ord)
 
 data Constraint
   = Exact Id Double
