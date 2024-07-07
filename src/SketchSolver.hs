@@ -57,7 +57,6 @@ generateModel _ = undefined
 solveConstraints :: SolverM Sketch
 solveConstraints = do
   (uf, onLines, exacts, eqs, sk) <- readStat
-  traceShowM eqs
   mapM_ (uncurry unifyIds) eqs
   pure sk
 
@@ -88,10 +87,8 @@ unifyIds :: Id -> Id -> SolverM ()
 unifyIds l r = do
   liftA2 (,) (parentIsExact l) (parentIsExact r) >>= \case
     (True, False) -> do
-      traceShowM ("l is exact", l)
       updateUf l r
     (False, True) -> do
-      traceShowM ("r is exact", r)
       updateUf r l
     (True, True) -> do
       lv <- getValue l
