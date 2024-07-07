@@ -40,7 +40,7 @@ putEq id1 id2 = tell [Eq id1 id2]
 
 --- SOLVER
 
-sketch :: (Shape s) => SketchM s -> Either SketchError Model2d
+sketch :: SketchM Polygon -> Either SketchError Model2d
 sketch m =
   m
     & fmap wrapShape
