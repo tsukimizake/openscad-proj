@@ -1,5 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
 {-# HLINT ignore "Use <$>" #-}
 {-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
@@ -12,7 +10,7 @@ import Data.Either (isRight)
 import Data.Function ((&))
 import OpenSCAD (Model2d, OpenSCADM, translate, union)
 import Sketch
-import SketchTypes (SketchError)
+import SketchTypes
 import Test.Hspec
 
 rect :: (Either SketchError Model2d)
@@ -21,6 +19,18 @@ rect = sketch do
   b <- point & x 4 & y 0
   c <- point & x 4 & y 4
   d <- point & x 0 & y 4
+  poly [a, b, c, d]
+
+eqSpec :: (Either SketchError Model2d)
+eqSpec = sketch do
+  a <- point & x 0 & y 0
+  b <- point & x 4
+  c <- point
+  d <- point & y 4
+  putEq a.y b.y
+  putEq a.x d.x
+  putEq c.x b.x
+  putEq c.y d.y
   poly [a, b, c, d]
 
 pitagoras1 :: (Either SketchError Model2d)
@@ -72,6 +82,9 @@ main = hspec $ do
   describe "SketchExamples" $ do
     it "rect should be Right" $
       rect `shouldSatisfy` isRight
+
+    it "eqSpec should be Right" $
+      eqSpec `shouldSatisfy` isRight
 
     it "pitagoras1 should be Right" $
       pitagoras1 `shouldSatisfy` isRight
