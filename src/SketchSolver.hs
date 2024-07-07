@@ -11,7 +11,6 @@ import Control.Monad.Freer.Error
 import Control.Monad.Freer.Reader (Reader, ask, runReader)
 import Control.Monad.Freer.State
 import Data.Function ((&))
-import qualified Data.List as List
 import Data.Maybe (mapMaybe)
 import qualified Data.Maybe as Maybe
 import Debug.Trace (traceShowId, traceShowM)
@@ -85,25 +84,17 @@ readStat = do
 
 unifyIds :: Id -> Id -> SolverM ()
 unifyIds l r = do
-  liftA2 (,) (parentIsExact l) (parentIsExact r) >>= \case
-    (True, False) -> do
+  liftA2 (,) (getValue l) (getValue r) >>= \case
+    (Just _, Nothing) -> do
       updateUf l r
-    (False, True) -> do
+    (Nothing, Just _) -> do
       updateUf r l
-    (True, True) -> do
-      lv <- getValue l
-      rv <- getValue r
+    (Just lv, Just rv) -> do
       if lv == rv
         then pure ()
         else
-          throwError
-            ( Contradiction $
-                "Exact values are not equal: "
-                  ++ (show l ++ ":" ++ show lv)
-                  ++ ", "
-                  ++ (show r ++ ":" ++ show rv)
-            )
-    (False, False) -> do
+          throwContradiction (l, lv) (r, rv)
+    (Nothing, Nothing) -> do
       pure ()
 
 -- helpers
@@ -134,3 +125,16 @@ updateUf :: Id -> Id -> SolverM ()
 updateUf l r = do
   (uf, _, _, _, _) <- readStat
   put $ union l r uf
+
+throwContradiction :: (Id, Double) -> (Id, Double) -> SolverM ()
+throwContradiction (l, lv) (r, rv) = do
+  (_, _, _, _, sk) <- readStat
+
+  throwError
+    ( Contradiction $
+        "Exact values are not equal: "
+          ++ (show l ++ ":" ++ show lv)
+          ++ ", "
+          ++ (show r ++ ":" ++ show rv)
+          ++ ("in" ++ show sk)
+    )
