@@ -95,7 +95,14 @@ unifyIds l r = do
       rv <- getValue r
       if lv == rv
         then pure ()
-        else throwError (Contradiction $ "Exact values are not equal: " ++ show lv ++ " != " ++ show rv)
+        else
+          throwError
+            ( Contradiction $
+                "Exact values are not equal: "
+                  ++ (show l ++ ":" ++ show lv)
+                  ++ ", "
+                  ++ (show r ++ ":" ++ show rv)
+            )
     (False, False) -> do
       pure ()
 
