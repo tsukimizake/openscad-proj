@@ -1,3 +1,4 @@
+{-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# OPTIONS_GHC -Wno-unrecognisepointd-pragmas #-}
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
@@ -27,60 +28,78 @@ type Exacts = [(Id, Double)]
 
 type Eqs = [(Id, Id)]
 
+data SolverState = SolverState
+  { uf :: UnionFind,
+    onLines :: OnLines,
+    exacts :: Exacts,
+    eqs :: Eqs,
+    sketch :: Sketch
+  }
+
 runSolver :: (Sketch, [Constraint]) -> Either SketchError Model2d
 runSolver (sk, cs) =
   let onLines = mapMaybe (\case OnLine p l -> Just (p, l); _ -> Nothing) cs
       exacts = mapMaybe (\case Exact id v -> Just (id, v); _ -> Nothing) cs
       eqs = mapMaybe (\case Eq l r -> Just (l, r); _ -> Nothing) cs
-   in (solveConstraints >>= validateAllJust >>= generateModel)
+   in (solveConstraints >> validateAllJust >> generateModel)
         & runState emptyUF
         & runReader (onLines, exacts, eqs, sk)
         & fmap fst
         & runError
         & run
 
-generateModel :: Sketch -> SolverM Model2d
-generateModel (Poly (Polygon ps)) =
-  do
-    rs <-
-      forM
-        ps
-        ( \(Point x y) -> do
-            x1' <- getValue x >>= assertJust
-            y1' <- getValue y >>= assertJust
-            pure (x1', y1')
-        )
-    pure $ polygon 3 [rs]
-generateModel _ = undefined
+generateModel :: SolverM Model2d
+generateModel = do
+  SolverState {sketch} <- readStat
+  generateModelImpl sketch
+  where
+    generateModelImpl :: Sketch -> SolverM Model2d
+    generateModelImpl (Poly (Polygon ps)) =
+      do
+        rs <-
+          forM
+            ps
+            ( \(Point x y) -> do
+                x1' <- getValue x >>= assertJust
+                y1' <- getValue y >>= assertJust
+                pure (x1', y1')
+            )
+        pure $ polygon 3 [rs]
+    generateModelImpl _ = undefined
 
-solveConstraints :: SolverM Sketch
+solveConstraints :: SolverM ()
 solveConstraints = do
-  (uf, onLines, exacts, eqs, sk) <- readStat
+  SolverState {eqs} <- readStat
   mapM_ (uncurry unifyIds) eqs
-  pure sk
 
-validateAllJust :: Sketch -> SolverM Sketch
-validateAllJust sk@(P (Point x y)) = do
-  liftA2 (,) (isSolved x) (isSolved y) >>= \case
-    (True, True) -> pure sk
-    _ -> throwError (Unresolved $ show sk)
-validateAllJust sk@(LineFunc (Line lx ly angle)) = do
-  liftA3 (,,) (isSolved lx) (isSolved ly) (isSolved angle) >>= \case
-    (True, True, True) -> pure sk
-    _ -> throwError (Unresolved $ show sk)
-validateAllJust sk@(Poly (Polygon ps)) = do
-  _ <- ps & mapM (validateAllJust . P)
-  pure sk
+validateAllJust :: SolverM ()
+validateAllJust = do
+  SolverState {sketch} <- readStat
+  validateAllJustImpl sketch
+  pure ()
+  where
+    validateAllJustImpl :: Sketch -> SolverM ()
+    validateAllJustImpl sk@(P (Point x y)) = do
+      liftA2 (,) (isSolved x) (isSolved y) >>= \case
+        (True, True) -> pure ()
+        _ -> throwError (Unresolved $ show sk)
+    validateAllJustImpl sk@(LineFunc (Line lx ly angle)) = do
+      liftA3 (,,) (isSolved lx) (isSolved ly) (isSolved angle) >>= \case
+        (True, True, True) -> pure ()
+        _ -> throwError (Unresolved $ show sk)
+    validateAllJustImpl (Poly (Polygon ps)) = do
+      _ <- ps & mapM (validateAllJustImpl . P)
+      pure ()
 
 isSolved :: Id -> SolverM Bool
 isSolved id = do
   getValue id & fmap Maybe.isJust
 
-readStat :: SolverM (UnionFind, OnLines, Exacts, Eqs, Sketch)
+readStat :: SolverM SolverState
 readStat = do
   uf <- get
   (onLines, exacts, eqs, sk) <- ask
-  pure (uf, onLines, exacts, eqs, sk)
+  pure $ SolverState uf onLines exacts eqs sk
 
 unifyIds :: Id -> Id -> SolverM ()
 unifyIds l r = do
@@ -97,10 +116,13 @@ unifyIds l r = do
     (Nothing, Nothing) -> do
       pure ()
 
+----------
 -- helpers
+----------
+
 getValue :: Id -> SolverM (Maybe Double)
 getValue id = do
-  (uf, _, exacts, _, _) <- readStat
+  SolverState {uf, exacts} <- readStat
   case find id uf of
     parent -> pure $ lookup parent exacts
 
@@ -111,24 +133,28 @@ assertJust = \case
 
 parentIsExact :: Id -> SolverM Bool
 parentIsExact id = do
-  (uf, _, exacts, _, _) <- readStat
+  SolverState {uf, exacts} <- readStat
   pure $ isExact id uf exacts
-
-isExact :: Id -> UnionFind -> Exacts -> Bool
-isExact id uf exacts =
-  case find id uf of
-    parent -> case lookup parent exacts of
-      Just _ -> True
-      _ -> False
+  where
+    isExact :: Id -> UnionFind -> Exacts -> Bool
+    isExact id_ uf exacts =
+      case find id_ uf of
+        parent -> case lookup parent exacts of
+          Just _ -> True
+          _ -> False
 
 updateUf :: Id -> Id -> SolverM ()
 updateUf l r = do
-  (uf, _, _, _, _) <- readStat
+  SolverState {uf} <- readStat
   put $ union l r uf
+
+----------
+-- error functions
+----------
 
 throwContradiction :: (Id, Double) -> (Id, Double) -> SolverM ()
 throwContradiction (l, lv) (r, rv) = do
-  (_, _, _, _, sk) <- readStat
+  SolverState {sketch} <- readStat
 
   throwError
     ( Contradiction $
@@ -136,5 +162,5 @@ throwContradiction (l, lv) (r, rv) = do
           ++ (show l ++ ":" ++ show lv)
           ++ ", "
           ++ (show r ++ ":" ++ show rv)
-          ++ ("in" ++ show sk)
+          ++ ("\nin " ++ show sketch)
     )
