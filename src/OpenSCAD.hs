@@ -219,6 +219,7 @@ import Data.Maybe (catMaybes)
 import qualified Data.Set as Set
 import Prettyprinter ((<+>))
 import qualified Prettyprinter as PP
+import Utils (safeHead, safeTail)
 
 type OpenSCADM_ v a = Eff '[State Int, Writer [(String, Model v)]] a
 
@@ -277,7 +278,7 @@ instance Vector Vector3d where
 -- Coplanar only makes sense for R3, so it's not part of the Vector class
 coplanar :: [Vector3d] -> Bool
 coplanar vs@(v1 : v2 : v3 : vs')
-  | collinear $ take 3 vs = coplanar $ tail vs
+  | collinear $ take 3 vs = coplanar $ safeTail vs
   | otherwise =
       all (\v -> (v3 #- v1) #. ((v2 #- v1) #* (v #- v3)) == 0) vs'
 coplanar _ = True -- by definition
@@ -545,19 +546,22 @@ polyhedron convexity paths
       error "Face orientations are counterclockwise."
   | otherwise = Solid . Polyhedron convexity points $ sides sidesIn
   where
-    vectors = concatMap (\p -> zip p (tail p ++ [head p])) paths
+    vectors = concatMap (\p -> zip p (safeTail p ++ catMaybes [safeHead p])) paths
     edges = nub $ map (Set.fromList . \(a, b) -> [a, b]) vectors
     points = nub $ concat paths
     xMax = maximum points
-    faceMax = head $ filter (elem xMax) paths
+    faceMax = case safeHead (filter (elem xMax) paths) of
+      Just fm -> fm
+      Nothing -> error "No face contains the maximum point"
     (maxFirst, maxLast) = break (== xMax) faceMax
     (headMax, tailMax) =
       ( if null maxFirst
           then last maxLast
           else last maxFirst,
-        if null (tail maxLast)
-          then head maxFirst
-          else head (tail maxLast)
+        case (maxFirst, safeTail maxLast) of
+          (hd : _, []) -> hd
+          (_, (x : _)) -> x
+          _ -> error "No face contains the maximum point"
       )
     xCross a b c = (\(a', _b', _c') -> a') $ (a #- b) #* (b #- c)
     sidesIn = map (concatMap (`elemIndices` points)) paths

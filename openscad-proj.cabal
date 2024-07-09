@@ -27,6 +27,7 @@ library
       SketchSolver
       SketchTypes
       UnionFind
+      Utils
   other-modules:
       Paths_openscad_proj
   autogen-modules:
