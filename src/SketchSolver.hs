@@ -20,7 +20,7 @@ import SketchTypes
 import UnionFind (UnionFind, emptyUF, find, union)
 import Prelude hiding (id)
 
-type SolverM = Eff '[State UnionFind, Reader (OnLines, Exacts, Eqs, Sketch), Error SketchError]
+type SolverM = Eff '[State (UnionFind, Eqs, Exacts), Reader (OnLines, Sketch), Error SketchError]
 
 type OnLines = [(Point, Line)]
 
@@ -42,8 +42,8 @@ runSolver (sk, cs) =
       exacts = mapMaybe (\case Exact id v -> Just (id, v); _ -> Nothing) cs
       eqs = mapMaybe (\case Eq l r -> Just (l, r); _ -> Nothing) cs
    in (repeatUntilFixpoint (solveOnLines >> solveUf >> solveOnLines >> validateAllJust >> generateModel))
-        & runState emptyUF
-        & runReader (onLines, exacts, eqs, sk)
+        & runState (emptyUF, eqs, exacts)
+        & runReader (onLines, sk)
         & fmap fst
         & runError
         & run
@@ -116,8 +116,8 @@ isSolved id = do
 
 readStat :: SolverM SolverState
 readStat = do
-  uf <- get
-  (onLines, exacts, eqs, sk) <- ask
+  (uf, eqs, exacts) <- get
+  (onLines, sk) <- ask
   pure $ SolverState uf onLines exacts eqs sk
 
 unifyIds :: Id -> Id -> SolverM ()
@@ -164,8 +164,8 @@ parentIsExact id = do
 
 updateUf :: Id -> Id -> SolverM ()
 updateUf l r = do
-  SolverState {uf} <- readStat
-  put $ union l r uf
+  SolverState {uf, eqs, exacts} <- readStat
+  put $ (union l r uf, eqs, exacts)
 
 ----------
 -- error functions
