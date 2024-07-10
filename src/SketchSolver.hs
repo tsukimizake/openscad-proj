@@ -41,12 +41,31 @@ runSolver (sk, cs) =
   let onLines = mapMaybe (\case OnLine p l -> Just (p, l); _ -> Nothing) cs
       exacts = mapMaybe (\case Exact id v -> Just (id, v); _ -> Nothing) cs
       eqs = mapMaybe (\case Eq l r -> Just (l, r); _ -> Nothing) cs
-   in (solveConstraints >> validateAllJust >> generateModel)
+   in (repeatUntilFixpoint (solveOnLines >> solveUf >> solveOnLines >> validateAllJust >> generateModel))
         & runState emptyUF
         & runReader (onLines, exacts, eqs, sk)
         & fmap fst
         & runError
         & run
+
+repeatUntilFixpoint :: SolverM a -> SolverM a
+repeatUntilFixpoint m = do
+  -- repeat until state is not changed
+  beforeStat <- readStat
+  res <- m
+  afterStat <- readStat
+  if beforeStat.uf == afterStat.uf
+    then pure res
+    else repeatUntilFixpoint m
+
+solveOnLines :: SolverM ()
+solveOnLines = do
+  SolverState {onLines, sketch} <- readStat
+  mapM_ (solveOnLine sketch) onLines
+
+solveOnLine :: Sketch -> (Point, Line) -> SolverM ()
+solveOnLine sk (p, l) = do
+  undefined
 
 generateModel :: SolverM Model2d
 generateModel = do
@@ -67,8 +86,8 @@ generateModel = do
         pure $ polygon 3 [rs]
     generateModelImpl _ = undefined
 
-solveConstraints :: SolverM ()
-solveConstraints = do
+solveUf :: SolverM ()
+solveUf = do
   SolverState {eqs} <- readStat
   mapM_ (uncurry unifyIds) eqs
 

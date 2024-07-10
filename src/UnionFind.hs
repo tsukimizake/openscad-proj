@@ -4,7 +4,7 @@ import Data.Map (Map)
 import qualified Data.Map as Map
 import SketchTypes (Id)
 
-newtype UnionFind = UnionFind {parent :: Map Id Id}
+newtype UnionFind = UnionFind {parent :: Map Id Id} deriving (Show, Eq)
 
 emptyUF :: UnionFind
 emptyUF = UnionFind Map.empty
