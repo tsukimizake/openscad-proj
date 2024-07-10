@@ -41,7 +41,7 @@ runSolver (sk, cs) =
   let onLines = mapMaybe (\case OnLine p l -> Just (p, l); _ -> Nothing) cs
       exacts = mapMaybe (\case Exact id v -> Just (id, v); _ -> Nothing) cs
       eqs = mapMaybe (\case Eq l r -> Just (l, r); _ -> Nothing) cs
-   in (repeatUntilFixpoint (solveOnLines >> solveUf >> solveOnLines >> validateAllJust >> generateModel))
+   in (repeatUntilFixpoint (solveOnLines >> solveUf) >> validateAllJust >> generateModel)
         & runState (emptyUF, eqs, exacts)
         & runReader (onLines, sk)
         & fmap fst
