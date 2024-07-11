@@ -1,7 +1,18 @@
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
-{-# OPTIONS_GHC -Wno-missing-export-lists #-}
 
-module SketchTypes where
+module SketchTypes
+  ( SketchM,
+    Angle,
+    Id (..),
+    Sketch (..),
+    Shape (..),
+    Point (..),
+    Line (..),
+    Polygon (..),
+    SketchError (..),
+    Constraint (..),
+  )
+where
 
 import Control.Monad.Freer
 import Control.Monad.Freer.State

@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -Wno-deferred-out-of-scope-variables #-}
-
 module HoneyCombWall (honeyCombCell, honeyCombWall, honeyCombWallHex) where
 
 import Data.Function ((&))

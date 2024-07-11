@@ -2,8 +2,6 @@
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
 {-# HLINT ignore "Use <$>" #-}
-{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
-{-# OPTIONS_GHC -Wno-missing-export-lists #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
 module Sketch

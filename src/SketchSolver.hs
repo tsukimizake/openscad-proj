@@ -14,7 +14,6 @@ import Control.Monad.Freer.State
 import Data.Function ((&))
 import Data.Maybe (mapMaybe)
 import qualified Data.Maybe as Maybe
-import Debug.Trace (traceShowId, traceShowM)
 import OpenSCAD (Model2d, polygon)
 import SketchTypes
 import UnionFind (UnionFind, emptyUF, find, union)
