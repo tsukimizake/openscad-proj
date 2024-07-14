@@ -6,6 +6,7 @@
 
 module Main where
 
+import Data.Either (isRight)
 import Data.Function ((&))
 import OpenSCAD
 import Sketch
@@ -65,3 +66,12 @@ main = hspec $ do
             c <- intersectionPoint v1 v2
             poly [a, b, c]
       isoceles `shouldBe` (Right $ polygon 3 [[(0.0, 0.0), (4.0, 0.0), (2.0000000000000004, 1.6781992623545603)]])
+    it "TODO chamferPita" do
+      let chamferPita = sketch do
+            a <- point & x 0 & y 0
+            b <- point & x 4 & y 0
+            v1 <- line & from a & degree 30
+            v2 <- line & from b & degree 90
+            c <- intersectionPoint v1 v2
+            poly [a, b, c]
+      chamferPita `shouldSatisfy` isRight
