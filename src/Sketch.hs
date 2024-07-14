@@ -1,6 +1,7 @@
 {-# LANGUAGE DataKinds #-}
 {-# LANGUAGE FlexibleContexts #-}
 {-# LANGUAGE GADTs #-}
+{-# LANGUAGE ScopedTypeVariables #-}
 {-# HLINT ignore "Use <$>" #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
@@ -88,7 +89,7 @@ from (Point x_ y_) m = do
 degree :: Angle -> SketchM Line -> SketchM Line
 degree val m = do
   l <- m
-  putExact l.angle val
+  putExact l.angle (floor val & (\(v :: Int) -> v `mod` 360) & fromIntegral)
   pure l
 
 onLine :: Point -> Line -> SketchM ()
