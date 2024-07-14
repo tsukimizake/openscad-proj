@@ -78,10 +78,13 @@ generateModel = do
     generateModelImpl :: Sketch -> SolverM Model2d
     generateModelImpl (Poly (Polygon ps)) = do
       rs <- forM ps $ \(Point x y chamfer) -> do
-        -- TODO chamfer
         x1' <- getValue x >>= assertJust
         y1' <- getValue y >>= assertJust
-        pure (x1', y1')
+        if chamfer == 0
+          then
+            pure (x1', y1')
+          else
+            error "chamfer is not supported"
       pure $ polygon 3 [rs]
     generateModelImpl _ = undefined
 

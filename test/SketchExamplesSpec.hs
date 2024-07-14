@@ -73,5 +73,5 @@ main = hspec $ do
             v1 <- line & from a & degree 30
             v2 <- line & from b & degree 90
             c <- intersectionPoint v1 v2
-            poly [a, b, c]
+            poly =<< traverse (chamfer 0.5 . pure) [a, b, c]
       chamferPita `shouldSatisfy` isRight
