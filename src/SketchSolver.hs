@@ -1,6 +1,7 @@
 {-# LANGUAGE NamedFieldPuns #-}
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
+{-# LANGUAGE ViewPatterns #-}
 {-# OPTIONS_GHC -Wno-unrecognisepointd-pragmas #-}
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
@@ -75,18 +76,37 @@ generateModel = do
   generateModelImpl sketch
   where
     generateModelImpl :: Sketch -> SolverM Model2d
-    generateModelImpl (Poly (Polygon ps)) =
-      do
-        rs <-
-          forM
-            ps
-            ( \(Point x y) -> do
-                x1' <- getValue x >>= assertJust
-                y1' <- getValue y >>= assertJust
-                pure (x1', y1')
-            )
-        pure $ polygon 3 [rs]
+    generateModelImpl (Poly (Polygon ps)) = do
+      rs <- forM ps $ \(Point x y chamfer) -> do
+        -- TODO chamfer
+        x1' <- getValue x >>= assertJust
+        y1' <- getValue y >>= assertJust
+        pure (x1', y1')
+      pure $ polygon 3 [rs]
     generateModelImpl _ = undefined
+
+validateAllJust :: SolverM ()
+validateAllJust = do
+  SolverState {sketch} <- readStat
+  validateAllJustImpl sketch
+  pure ()
+  where
+    validateAllJustImpl :: Sketch -> SolverM ()
+    validateAllJustImpl sk@(P p) = do
+      liftA2 (,) (isSolved p.x) (isSolved p.y) >>= \case
+        (True, True) -> pure ()
+        _ -> throwError (Unresolved $ show sk)
+    validateAllJustImpl sk@(LineFunc (Line lx ly angle)) = do
+      liftA3 (,,) (isSolved lx) (isSolved ly) (isSolved angle) >>= \case
+        (True, True, True) -> pure ()
+        _ -> throwError (Unresolved $ show sk)
+    validateAllJustImpl (Poly (Polygon ps)) = do
+      _ <- ps & mapM (validateAllJustImpl . P)
+      pure ()
+
+isSolved :: Id -> SolverM Bool
+isSolved id = do
+  getValue id & fmap Maybe.isJust
 
 --------------
 -- Intersections
@@ -144,14 +164,10 @@ solveOnLine :: (Point, Line) -> SolverM ()
 solveOnLine (p, l) = do
   angle_ <- getValue l.angle
   case angle_ of
-    Just 0 -> do
-      putEq p.y l.y
-    Just 90 -> do
-      putEq p.x l.x
-    Just 180 -> do
-      putEq p.y l.y
-    Just 270 -> do
-      putEq p.x l.x
+    Just 0 -> putEq p.y l.y
+    Just 90 -> putEq p.x l.x
+    Just 180 -> putEq p.y l.y
+    Just 270 -> putEq p.x l.x
     _ -> do
       liftA2 (,) (getValue p) (getValue l) >>= \case
         ((Nothing, Just y), (Just lx, Just _ly, Just angle)) -> do
@@ -179,29 +195,6 @@ solveUf :: SolverM ()
 solveUf = do
   SolverState {eqs} <- readStat
   mapM_ (uncurry unifyIds) eqs
-
-validateAllJust :: SolverM ()
-validateAllJust = do
-  SolverState {sketch} <- readStat
-  validateAllJustImpl sketch
-  pure ()
-  where
-    validateAllJustImpl :: Sketch -> SolverM ()
-    validateAllJustImpl sk@(P (Point x y)) = do
-      liftA2 (,) (isSolved x) (isSolved y) >>= \case
-        (True, True) -> pure ()
-        _ -> throwError (Unresolved $ show sk)
-    validateAllJustImpl sk@(LineFunc (Line lx ly angle)) = do
-      liftA3 (,,) (isSolved lx) (isSolved ly) (isSolved angle) >>= \case
-        (True, True, True) -> pure ()
-        _ -> throwError (Unresolved $ show sk)
-    validateAllJustImpl (Poly (Polygon ps)) = do
-      _ <- ps & mapM (validateAllJustImpl . P)
-      pure ()
-
-isSolved :: Id -> SolverM Bool
-isSolved id = do
-  getValue id & fmap Maybe.isJust
 
 readStat :: SolverM SolverState
 readStat = do

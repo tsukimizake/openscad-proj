@@ -34,7 +34,7 @@ data Sketch
   | Poly Polygon
   deriving (Show, Eq, Ord)
 
-data Point = Point {x :: Id, y :: Id}
+data Point = Point {x :: Id, y :: Id, chamfer :: Double}
   deriving (Show, Eq, Ord)
 
 instance Shape Point where

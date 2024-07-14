@@ -12,6 +12,7 @@ module Sketch
     point,
     x,
     y,
+    chamfer,
     line,
     onLine,
     from,
@@ -57,19 +58,24 @@ genId = do
 --- POINT
 
 point :: SketchM Point
-point = Point <$> genId <*> genId
+point = Point <$> genId <*> genId <*> pure 0
 
 x :: Double -> SketchM Point -> SketchM Point
 x val m = do
-  (Point x_ y_) <- m
+  (Point x_ y_ cham) <- m
   putExact x_ val
-  pure $ Point x_ y_
+  pure $ Point x_ y_ cham
 
 y :: Double -> SketchM Point -> SketchM Point
 y val m = do
-  (Point x_ y_) <- m
+  (Point x_ y_ cham) <- m
   putExact y_ val
-  pure $ Point x_ y_
+  pure $ Point x_ y_ cham
+
+chamfer :: Double -> SketchM Point -> SketchM Point
+chamfer val m = do
+  (Point x_ y_ _) <- m
+  pure $ Point x_ y_ val
 
 --- LINE
 
@@ -80,7 +86,7 @@ line = do
   Line x_ y_ <$> genId
 
 from :: Point -> SketchM Line -> SketchM Line
-from (Point x_ y_) m = do
+from (Point x_ y_ _) m = do
   l <- m
   putEq l.x x_
   putEq l.y y_
