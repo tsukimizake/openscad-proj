@@ -61,6 +61,7 @@ data Constraint
   = Exact Id Double
   | Eq Id Id
   | OnLine Point Line
+  | Intersection Line Line Point
   deriving (Show, Eq, Ord)
 
 class Shape a where

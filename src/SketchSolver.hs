@@ -23,7 +23,9 @@ import UnionFind (UnionFind, emptyUF, find, union)
 import Prelude hiding (cos, id, sin)
 import qualified Prelude
 
-type SolverM = Eff '[State (UnionFind, Eqs, Exacts), Reader (OnLines, Sketch), Error SketchError]
+type SolverM = Eff '[State (UnionFind, Eqs, Exacts), Reader (OnLines, Sketch, Intersections), Error SketchError]
+
+type Intersections = [(Line, Line, Point)]
 
 type OnLines = [(Point, Line)]
 
@@ -36,7 +38,8 @@ data SolverState = SolverState
     onLines :: OnLines,
     exacts :: Exacts,
     eqs :: Eqs,
-    sketch :: Sketch
+    sketch :: Sketch,
+    intersections :: Intersections
   }
 
 runSolver :: (Sketch, [Constraint]) -> Either SketchError Model2d
@@ -44,9 +47,10 @@ runSolver (sk, cs) =
   let onLines = mapMaybe (\case OnLine p l -> Just (p, l); _ -> Nothing) cs
       exacts = mapMaybe (\case Exact id v -> Just (id, v); _ -> Nothing) cs
       eqs = mapMaybe (\case Eq l r -> Just (l, r); _ -> Nothing) cs
-   in (repeatUntilFixpoint (solveOnLines >> solveUf) >> validateAllJust >> generateModel)
+      intersections = mapMaybe (\case Intersection l r p -> Just (l, r, p); _ -> Nothing) cs
+   in (repeatUntilFixpoint (solveIntersections >> solveOnLines >> solveUf) >> validateAllJust >> generateModel)
         & runState (emptyUF, eqs, exacts)
-        & runReader (onLines, sk)
+        & runReader (onLines, sk, intersections)
         & fmap fst
         & runError
         & run
@@ -60,6 +64,39 @@ repeatUntilFixpoint m = do
   if beforeStat.uf == afterStat.uf
     then pure res
     else repeatUntilFixpoint m
+
+--------------
+-- Finalize
+--------------
+
+generateModel :: SolverM Model2d
+generateModel = do
+  SolverState {sketch} <- readStat
+  generateModelImpl sketch
+  where
+    generateModelImpl :: Sketch -> SolverM Model2d
+    generateModelImpl (Poly (Polygon ps)) =
+      do
+        rs <-
+          forM
+            ps
+            ( \(Point x y) -> do
+                x1' <- getValue x >>= assertJust
+                y1' <- getValue y >>= assertJust
+                pure (x1', y1')
+            )
+        pure $ polygon 3 [rs]
+    generateModelImpl _ = undefined
+
+--------------
+-- Intersections
+--------------
+solveIntersections :: SolverM ()
+solveIntersections = pure ()
+
+--------------
+-- OnLines
+--------------
 
 solveOnLines :: SolverM ()
 solveOnLines = do
@@ -97,24 +134,9 @@ solveOnLine (p, l) = do
           putExact l.angle angle
         _ -> pure ()
 
-generateModel :: SolverM Model2d
-generateModel = do
-  SolverState {sketch} <- readStat
-  generateModelImpl sketch
-  where
-    generateModelImpl :: Sketch -> SolverM Model2d
-    generateModelImpl (Poly (Polygon ps)) =
-      do
-        rs <-
-          forM
-            ps
-            ( \(Point x y) -> do
-                x1' <- getValue x >>= assertJust
-                y1' <- getValue y >>= assertJust
-                pure (x1', y1')
-            )
-        pure $ polygon 3 [rs]
-    generateModelImpl _ = undefined
+--------------
+-- UF
+--------------
 
 solveUf :: SolverM ()
 solveUf = do
@@ -147,8 +169,8 @@ isSolved id = do
 readStat :: SolverM SolverState
 readStat = do
   (uf, eqs, exacts) <- get
-  (onLines, sk) <- ask
-  pure $ SolverState uf onLines exacts eqs sk
+  (onLines, sk, intersections) <- ask
+  pure $ SolverState uf onLines exacts eqs sk intersections
 
 unifyIds :: Id -> Id -> SolverM ()
 unifyIds l r = do
@@ -229,6 +251,12 @@ putEq id1 id2 = do
   let eqs = [(id1, id2)] ++ stat.eqs
   put (stat.uf, eqs, stat.exacts)
 
+cos :: (Floating b) => b -> b
+cos degree = degree * (pi / 180) & Prelude.cos
+
+sin :: (Floating b) => b -> b
+sin degree = degree * (pi / 180) & Prelude.sin
+
 ----------
 -- error functions
 ----------
@@ -245,9 +273,3 @@ throwContradiction (l, lv) (r, rv) = do
           ++ (show r ++ ":" ++ show rv)
           ++ ("\nin " ++ show sketch)
     )
-
-cos :: (Floating b) => b -> b
-cos degree = degree * (pi / 180) & Prelude.cos
-
-sin :: (Floating b) => b -> b
-sin degree = degree * (pi / 180) & Prelude.sin

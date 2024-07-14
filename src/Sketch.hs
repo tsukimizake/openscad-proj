@@ -104,6 +104,7 @@ poly = pure . Polygon
 intersectionPoint :: Line -> Line -> SketchM Point
 intersectionPoint l1 l2 = do
   p <- point
+  tell [Intersection l1 l2 p]
   onLine p l1
   onLine p l2
   pure p
