@@ -4,7 +4,7 @@
 {-# OPTIONS_GHC -Wno-unrecognisepointd-pragmas #-}
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
-module SketchSolver (runSolver) where
+module SketchSolver (runSolver, cos, sin) where
 
 import Control.Applicative (liftA3)
 import Control.Monad (forM)
@@ -16,10 +16,12 @@ import Data.Function ((&))
 import Data.Kind (Type)
 import Data.Maybe (mapMaybe)
 import qualified Data.Maybe as Maybe
+import Debug.Trace
 import OpenSCAD (Model2d, polygon)
 import SketchTypes
 import UnionFind (UnionFind, emptyUF, find, union)
-import Prelude hiding (id)
+import Prelude hiding (cos, id, sin)
+import qualified Prelude
 
 type SolverM = Eff '[State (UnionFind, Eqs, Exacts), Reader (OnLines, Sketch), Error SketchError]
 
@@ -65,28 +67,35 @@ solveOnLines = do
   mapM_ (solveOnLine) onLines
 
 solveOnLine :: (Point, Line) -> SolverM ()
-solveOnLine (p, l) =
-  liftA2 (,) (getValue p) (getValue l) >>= \case
-    -- TODO check
-    -- TODO angle 0,90,180,270
-
-    -- 0 degree
-    ((Nothing, Just y), (Just lx, Just _ly, Just angle)) -> do
-      let x = lx + cos angle * y
-      putExact p.x x
-    ((Just x, Nothing), (Just _lx, Just ly, Just angle)) -> do
-      let y = ly - sin angle * x
-      putExact p.y y
-    ((Just x, Just y), (Nothing, Just _ly, Just angle)) -> do
-      let lx = x - cos angle * y
-      putExact l.x lx
-    ((Just x, Just y), (Just _lx, Nothing, Just angle)) -> do
-      let ly = y + sin angle * x
-      putExact l.y ly
-    ((Just x, Just y), (Just lx, Just ly, Nothing)) -> do
-      let angle = atan2 (y - ly) (x - lx)
-      putExact l.angle angle
-    _ -> pure ()
+solveOnLine (p, l) = do
+  angle_ <- getValue l.angle
+  case angle_ of
+    Just 0 -> do
+      putEq p.y l.y
+    Just 90 -> do
+      putEq p.x l.x
+    Just 180 -> do
+      putEq p.y l.y
+    Just 270 -> do
+      putEq p.x l.x
+    _ -> do
+      liftA2 (,) (getValue p) (getValue l) >>= \case
+        ((Nothing, Just y), (Just lx, Just _ly, Just angle)) -> do
+          let x = lx + cos angle * y
+          putExact p.x x
+        ((Just x, Nothing), (Just _lx, Just ly, Just angle)) -> do
+          let y = ly + sin angle * x
+          putExact p.y y
+        ((Just x, Just y), (Nothing, Just _ly, Just angle)) -> do
+          let lx = x - cos angle * y
+          putExact l.x lx
+        ((Just x, Just y), (Just _lx, Nothing, Just angle)) -> do
+          let ly = y - sin angle * x
+          putExact l.y ly
+        ((Just x, Just y), (Just lx, Just ly, Nothing)) -> do
+          let angle = atan2 (y - ly) (x - lx)
+          putExact l.angle angle
+        _ -> pure ()
 
 generateModel :: SolverM Model2d
 generateModel = do
@@ -236,3 +245,9 @@ throwContradiction (l, lv) (r, rv) = do
           ++ (show r ++ ":" ++ show rv)
           ++ ("\nin " ++ show sketch)
     )
+
+cos :: (Floating b) => b -> b
+cos degree = degree * (pi / 180) & Prelude.cos
+
+sin :: (Floating b) => b -> b
+sin degree = degree * (pi / 180) & Prelude.sin

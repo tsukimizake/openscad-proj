@@ -8,7 +8,7 @@ module Main where
 
 import Data.Either (isRight)
 import Data.Function ((&))
-import Debug.Trace
+import Debug.Trace (traceShowM)
 import OpenSCAD
 import Sketch
 import SketchTypes
@@ -46,7 +46,7 @@ main = hspec $ do
             v2 <- line & from b & degree 90
             c <- intersectionPoint v1 v2
             poly [a, b, c]
-      pitagoras1 `shouldSatisfy` isRight
+      pitagoras1 `shouldBe` (Right $ polygon 3 [[(0.0, 0.0), (4.0, 0.0), (4.0, 1.9999999999999998)]])
 
     it "pitagoras2 should be Right" do
       let pitagoras2 = sketch do
@@ -58,7 +58,18 @@ main = hspec $ do
             v3 <- line & from b & degree 90
             c <- intersectionPoint v2 v3
             poly [a, b, c]
-      pitagoras2 `shouldSatisfy` isRight
+      pitagoras2 `shouldBe` (Right $ polygon 3 [[(0.0, 0.0), (4.0, 0.0), (4.0, 1.9999999999999998)]])
+    it "pitagoras3 should be Right" do
+      let pitagoras3 = sketch do
+            a <- point & x 0 -- y is not set, but solved with constraints
+            b <- point & x 4 & y 0
+            v1 <- line & from a & degree 0
+            onLine b v1
+            v2 <- line & from a & degree 30
+            v3 <- line & from b & degree 90
+            c <- intersectionPoint v2 v3
+            poly [a, b, c]
+      pitagoras3 `shouldBe` (Right $ polygon 3 [[(0.0, 0.0), (4.0, 0.0), (4.0, 1.9999999999999998)]])
 
     it "isoceles should be Right" do
       let isoceles = sketch do
@@ -67,5 +78,6 @@ main = hspec $ do
             v1 <- line & from a & degree 40
             v2 <- line & from b & degree 140
             c <- intersectionPoint v1 v2
+            traceShowM c
             poly [a, b, c]
       isoceles `shouldSatisfy` isRight

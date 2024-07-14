@@ -2,6 +2,8 @@ set shell := ["nu", "-c"]
 
 default:
     stack run
+test:
+    stack test
 
 watch:
     watch . --glob=**/*.hs {|| just default }
