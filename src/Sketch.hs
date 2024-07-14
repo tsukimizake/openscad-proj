@@ -17,7 +17,6 @@ module Sketch
     degree,
     intersectionPoint,
     poly,
-    putEq, -- exported for debug
   )
 where
 

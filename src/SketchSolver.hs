@@ -20,7 +20,7 @@ import Debug.Trace
 import OpenSCAD (Model2d, polygon)
 import SketchTypes
 import UnionFind (UnionFind, emptyUF, find, union)
-import Prelude hiding (cos, id, sin)
+import Prelude hiding (cos, id, sin, tan)
 import qualified Prelude
 
 type SolverM = Eff '[State (UnionFind, Eqs, Exacts), Reader (OnLines, Sketch, Intersections), Error SketchError]
@@ -92,7 +92,44 @@ generateModel = do
 -- Intersections
 --------------
 solveIntersections :: SolverM ()
-solveIntersections = pure ()
+solveIntersections = do
+  SolverState {intersections} <- readStat
+  mapM_ solveIntersection intersections
+
+solveIntersection :: (Line, Line, Point) -> SolverM ()
+solveIntersection (l1, l2, p) = do
+  liftA3 (,,) (getValue l1) (getValue l2) (getValue p) >>= \case
+    ((Just x1, Just y1, Just angle1), (Just x2, Just y2, Just angle2), (Nothing, Nothing)) -> do
+      case (angle1, angle2) of
+        (0, _) ->
+          putEq p.y l1.y
+        (90, _) ->
+          putEq p.x l1.x
+        (180, _) ->
+          putEq p.y l1.y
+        (270, _) ->
+          putEq p.x l1.x
+        (_, 0) ->
+          putEq p.y l2.y
+        (_, 90) ->
+          putEq p.x l2.x
+        (_, 180) ->
+          putEq p.y l2.y
+        (_, 270) ->
+          putEq p.x l2.x
+        _ -> do
+          let (x, y) = calcIntersection (x1, y1, angle1) (x2, y2, angle2)
+          putExact p.x x
+          putExact p.y y
+    _ -> pure ()
+
+calcIntersection :: (Double, Double, Double) -> (Double, Double, Double) -> (Double, Double)
+calcIntersection (x1, y1, angle1) (x2, y2, angle2) =
+  let a1 = tan angle1
+      a2 = tan angle2
+      x = (a1 * x1 - a2 * x2 + y2 - y1) / (a1 - a2)
+      y = a1 * (x - x1) + y1
+   in (x, y)
 
 --------------
 -- OnLines
@@ -256,6 +293,9 @@ cos degree = degree * (pi / 180) & Prelude.cos
 
 sin :: (Floating b) => b -> b
 sin degree = degree * (pi / 180) & Prelude.sin
+
+tan :: (Floating b) => b -> b
+tan degree = degree * (pi / 180) & Prelude.tan
 
 ----------
 -- error functions
