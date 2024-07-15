@@ -2,10 +2,11 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 {-# LANGUAGE TypeFamilies #-}
 {-# LANGUAGE ViewPatterns #-}
+{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
 {-# OPTIONS_GHC -Wno-unrecognisepointd-pragmas #-}
 {-# OPTIONS_GHC -Wno-unused-top-binds #-}
 
-module SketchSolver (runSolver, cos, sin) where
+module SketchSolver (runSolver) where
 
 import Control.Applicative (liftA3)
 import Control.Monad (forM)
@@ -15,8 +16,7 @@ import Control.Monad.Freer.Reader (Reader, ask, runReader)
 import Control.Monad.Freer.State
 import Data.Function ((&))
 import Data.Kind (Type)
-import Data.Maybe (mapMaybe)
-import qualified Data.Maybe as Maybe
+import Data.Maybe
 import Debug.Trace
 import OpenSCAD (Model2d, polygon)
 import SketchTypes
@@ -43,8 +43,12 @@ data SolverState = SolverState
     intersections :: Intersections
   }
 
-runSolver :: (Sketch, [Constraint]) -> Either SketchError Model2d
-runSolver (sk, cs) =
+runSolver :: ([Sketch], [Constraint]) -> Either SketchError [Model2d]
+runSolver (sketches, constraints) = do
+  sketches & mapM (\sk -> runSolverImpl (sk, constraints))
+
+runSolverImpl :: (Sketch, [Constraint]) -> Either SketchError Model2d
+runSolverImpl (sk, cs) =
   let onLines = mapMaybe (\case OnLine p l -> Just (p, l); _ -> Nothing) cs
       exacts = mapMaybe (\case Exact id v -> Just (id, v); _ -> Nothing) cs
       eqs = mapMaybe (\case Eq l r -> Just (l, r); _ -> Nothing) cs
@@ -79,27 +83,30 @@ generateModel = do
     generateModelImpl (Poly (Polygon ps)) = do
       rs <- forM (zip3 (drop (length ps - 1) $ cycle ps) ps (drop 1 $ cycle ps)) $
         \(prev, Point x y chamfer, next) -> do
-          x1' <- getValue x >>= assertJust
-          y1' <- getValue y >>= assertJust
+          x' <- getValue x >>= assertJust
+          y' <- getValue y >>= assertJust
           if chamfer == 0
             then
-              pure (x1', y1')
+              pure [(x', y')]
             else do
-              let prev =
-                    if idx == 0
-                      then
-                        last ps
-                      else
-                        ps !! (idx - 1)
-              let next =
-                    if idx == length ps - 1
-                      then
-                        head ps
-                      else
-                        ps !! (idx + 1)
+              ~(Just prevx, Just prevy) <- getValue prev
+              ~(Just nextx, Just nexty) <- getValue next
+              let getCosSin (xl, yl) (xr, yr) =
+                    let dx = xr - xl
+                        dy = yr - yl
+                        len = sqrt (dx * dx + dy * dy)
+                        c = dx / len
+                        s = dy / len
+                     in (c, s)
+                  (cos1, sin1) = getCosSin (prevx, prevy) (x', y')
+                  (cos2, sin2) = getCosSin (x', y') (nextx, nexty)
+                  x1 = x' - cos1 * chamfer
+                  y1 = y' - sin1 * chamfer
+                  x2 = x' + cos2 * chamfer
+                  y2 = y' + sin2 * chamfer
+              pure [(x1, y1), (x2, y2)]
 
-              error "chamfer is not supported"
-      pure $ polygon 3 [rs]
+      pure $ polygon 3 [concat rs]
     generateModelImpl _ = undefined
 
 validateAllJust :: SolverM ()
@@ -123,7 +130,7 @@ validateAllJust = do
 
 isSolved :: Id -> SolverM Bool
 isSolved id = do
-  getValue id & fmap Maybe.isJust
+  getValue id & fmap isJust
 
 --------------
 -- Intersections

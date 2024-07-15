@@ -26,6 +26,8 @@ import Control.Monad.Freer
 import Control.Monad.Freer.State
 import Control.Monad.Freer.Writer (runWriter, tell)
 import Data.Function ((&))
+import Data.Functor ((<&>))
+import Data.List as List
 import OpenSCAD (Model2d)
 import SketchSolver (runSolver)
 import SketchTypes
@@ -39,10 +41,10 @@ putEq id1 id2 = tell [Eq id1 id2]
 
 --- SOLVER
 
-sketch :: SketchM Polygon -> Either SketchError Model2d
+sketch :: SketchM [Polygon] -> Either SketchError [Model2d]
 sketch m =
   m
-    & fmap wrapShape
+    & fmap (List.map wrapShape)
     & (runState 0)
     & fmap fst
     & runWriter

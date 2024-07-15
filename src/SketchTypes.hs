@@ -12,6 +12,7 @@ module SketchTypes
     SketchError (..),
     Constraint (..),
   )
+
 where
 
 import Control.Monad.Freer
