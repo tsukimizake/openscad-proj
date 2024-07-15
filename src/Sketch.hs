@@ -19,6 +19,7 @@ module Sketch
     degree,
     intersectionPoint,
     poly,
+    sketchMono,
   )
 where
 
@@ -26,8 +27,7 @@ import Control.Monad.Freer
 import Control.Monad.Freer.State
 import Control.Monad.Freer.Writer (runWriter, tell)
 import Data.Function ((&))
-import Data.Functor ((<&>))
-import Data.List as List
+import qualified Data.List as List
 import OpenSCAD (Model2d)
 import SketchSolver (runSolver)
 import SketchTypes
@@ -50,6 +50,15 @@ sketch m =
     & runWriter
     & run
     & runSolver
+
+sketchMono :: SketchM Polygon -> Either SketchError Model2d
+sketchMono m =
+  m
+    & fmap (: [])
+    & sketch
+    & fmap \case
+      [r] -> r
+      _ -> error "should not happen"
 
 genId :: SketchM Id
 genId = do
