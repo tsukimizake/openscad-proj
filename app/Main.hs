@@ -1,5 +1,6 @@
 module Main (main) where
 
+import IronBrushCase
 import SketchTry
 import AirClothCap
 import HexCup
@@ -27,3 +28,4 @@ main = do
   PaniaGuard.run
   Washer.run
   SketchTry.run
+  IronBrushCase.run
