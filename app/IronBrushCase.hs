@@ -9,7 +9,7 @@ import Sketch
 obj :: OpenSCADM Model3d
 obj =
   do
-    let ~(Right [out, inn]) = sketchPolys do
+    let [out, inn] = sketchPolys do
           aout <- point & x 0 & y 0
           bout <- point & relx aout 0 & rely aout 34
           cout <- point & relx bout 40 & rely bout 0
@@ -23,7 +23,7 @@ obj =
           inn_ <- poly [ain, bin, cin, din]
           pure [out_, inn_]
 
-    let ~(Right sideimpl) = sketchPoly do
+    let sideimpl = sketchPoly do
           a <- point & x 0 & y 0
           b <- point & x 0 & y 120
           vtop <- line & from b & degree 20

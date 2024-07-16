@@ -204,6 +204,7 @@ module OpenSCAD
     screw,
     screwHole,
     with,
+    errorAssert,
   )
 where
 
@@ -317,6 +318,7 @@ data Shape
   | Circle Double Facets
   | Polygon Int [Vector2d] [[Int]]
   | Text String TextConfig
+  | ErrorAssert String
   deriving (Show, Eq)
 
 -- | The third argument to unsafePolyhedron is a 'Sides'.
@@ -459,6 +461,9 @@ projection = Projection
 text :: String -> TextConfig -> Model2d
 text t c =
   Shape $ Text t c
+
+errorAssert :: String -> Model2d
+errorAssert s = Shape $ ErrorAssert s
 
 -- | Turn a list of lists of 'Vector2d's and an Int into @polygon
 -- /convexity points path/@. The argument to polygon is the list of
@@ -807,6 +812,8 @@ instance PP.Pretty Shape where
     Text t c ->
       renderAction "text" $
         namedArg "text" (PP.dquotes $ PP.pretty t) : renderTextConfig c
+    ErrorAssert s ->
+      renderAction "assert" [PP.pretty False, PP.dquotes $ PP.pretty s]
 
 -- | Render `TextConfig` as args
 renderTextConfig :: TextConfig -> [PP.Doc ann]

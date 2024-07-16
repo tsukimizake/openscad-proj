@@ -9,7 +9,7 @@ import Sketch
 
 obj :: OpenSCADM Model3d
 obj = do
-  let (Right ([r, _], [])) = sketch do
+  let ([r, _], []) = sketch do
         a <- point & x 0 & y 0
         b <- point & x 4 & y 0
         v1 <- line & from a & degree 30

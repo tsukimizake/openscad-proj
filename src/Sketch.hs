@@ -31,14 +31,14 @@ import Control.Monad.Freer.State
 import Control.Monad.Freer.Writer (runWriter, tell)
 import Data.Function ((&))
 import qualified Data.List as List
-import OpenSCAD (Model2d)
+import OpenSCAD (Model2d, errorAssert)
 import SketchSolver (runSolver)
 import SketchTypes
 import Prelude hiding (id)
 
 --- SOLVER
 
-sketch :: SketchM ([Polygon], [Point]) -> Either SketchError ([Model2d], [Point])
+sketch :: SketchM ([Polygon], [Point]) -> ([Model2d], [Point])
 sketch m =
   m
     & fmap (\(polys, pts) -> (List.map wrapShape polys, pts))
@@ -47,20 +47,27 @@ sketch m =
     & runWriter
     & run
     & runSolver
+    & encodeError
 
-sketchPolys :: SketchM [Polygon] -> Either SketchError [Model2d]
+encodeError :: Either SketchError ([Model2d], [Point]) -> ([Model2d], [Point])
+encodeError = \case
+  Right r -> r
+  Left (Contradiction s) -> ([errorAssert s], [])
+  Left (Unresolved s) -> ([errorAssert s], [])
+
+sketchPolys :: SketchM [Polygon] -> [Model2d]
 sketchPolys m =
   m
     & fmap (\polys -> (polys, []))
     & sketch
-    & fmap fst
+    & fst
 
-sketchPoly :: SketchM Polygon -> Either SketchError Model2d
+sketchPoly :: SketchM Polygon -> Model2d
 sketchPoly m =
   m
     & fmap (\apoly -> ([apoly], []))
     & sketch
-    & fmap \case
+    & \case
       ([r], []) -> r
       _ -> error "should not happen"
 
