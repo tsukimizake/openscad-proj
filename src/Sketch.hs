@@ -134,8 +134,10 @@ degree val m = do
   putExact l.angle (floor val & (\(v :: Int) -> v `mod` 360) & fromIntegral)
   pure l
 
-onLine :: Point -> Line -> SketchM ()
-onLine p l = tell [OnLine p l]
+onLine :: Line -> Point -> SketchM Point
+onLine l p = do
+  tell [OnLine p l]
+  pure p
 
 --- POLYGON
 poly :: [Point] -> SketchM Polygon
@@ -147,8 +149,8 @@ intersectionPoint :: Line -> Line -> SketchM Point
 intersectionPoint l1 l2 = do
   p <- point
   tell [Intersection l1 l2 p]
-  onLine p l1
-  onLine p l2
+  onLine l1 p
+  onLine l2 p
   pure p
 
 -- helpers

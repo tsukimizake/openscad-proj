@@ -38,7 +38,7 @@ main = hspec $ do
             a <- point & x 0 & y 0
             b <- point & x 4 -- y is not set, but solved with constraints
             v1 <- line & from a & degree 0
-            onLine b v1
+            onLine v1 b
             v2 <- line & from a & degree 30
             v3 <- line & from b & degree 90
             c <- intersectionPoint v2 v3
@@ -49,7 +49,7 @@ main = hspec $ do
             a <- point & x 0 -- y is not set, but solved with constraints
             b <- point & x 4 & y 0
             v1 <- line & from a & degree 0
-            onLine b v1
+            onLine v1 b
             v2 <- line & from a & degree 30
             v3 <- line & from b & degree 90
             c <- intersectionPoint v2 v3
