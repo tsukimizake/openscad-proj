@@ -12,7 +12,6 @@ module SketchTypes
     SketchError (..),
     Constraint (..),
   )
-
 where
 
 import Control.Monad.Freer
@@ -62,6 +61,7 @@ data Constraint
   = Exact Id Double
   | Eq Id Id
   | OnLine Point Line
+  | Plus Id Id Double --  left = right + distance
   | Intersection Line Line Point
   deriving (Show, Eq, Ord)
 

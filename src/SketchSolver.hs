@@ -26,7 +26,7 @@ import UnionFind (UnionFind, emptyUF, find, union)
 import Prelude hiding (cos, id, sin, tan)
 import qualified Prelude
 
-type SolverM = Eff '[State (UnionFind, Eqs, Exacts), Reader (OnLines, Sketch, Intersections), Error SketchError]
+type SolverM = Eff '[State (UnionFind, Eqs, Exacts, Pluses), Reader (OnLines, Sketch, Intersections), Error SketchError]
 
 type Intersections = [(Line, Line, Point)]
 
@@ -36,10 +36,13 @@ type Exacts = [(Id, Double)]
 
 type Eqs = [(Id, Id)]
 
+type Pluses = [(Id, Id, Double)]
+
 data SolverState = SolverState
   { uf :: UnionFind,
     onLines :: OnLines,
     exacts :: Exacts,
+    pluses :: Pluses,
     eqs :: Eqs,
     sketch :: Sketch,
     intersections :: Intersections
@@ -68,8 +71,9 @@ runSolverImpl (sk, cs) =
       exacts = mapMaybe (\case Exact id v -> Just (id, v); _ -> Nothing) cs
       eqs = mapMaybe (\case Eq l r -> Just (l, r); _ -> Nothing) cs
       intersections = mapMaybe (\case Intersection l r p -> Just (l, r, p); _ -> Nothing) cs
+      pluses = mapMaybe (\case Plus l r d -> Just (l, r, d); _ -> Nothing) cs
    in (repeatUntilFixpoint (solveIntersections >> solveOnLines >> solveUf) >> validateAllJust >> generateModel)
-        & runState (emptyUF, eqs, exacts)
+        & runState (emptyUF, eqs, exacts, pluses)
         & runReader (onLines, sk, intersections)
         & fmap fst
         & runError
@@ -237,9 +241,9 @@ solveUf = do
 
 readStat :: SolverM SolverState
 readStat = do
-  (uf, eqs, exacts) <- get
+  (uf, eqs, exacts, pluses) <- get
   (onLines, sk, intersections) <- ask
-  pure $ SolverState uf onLines exacts eqs sk intersections
+  pure $ SolverState uf onLines exacts pluses eqs sk intersections
 
 unifyIds :: Id -> Id -> SolverM ()
 unifyIds l r = do
@@ -305,20 +309,20 @@ parentIsExact id = do
 
 updateUf :: Id -> Id -> SolverM ()
 updateUf l r = do
-  SolverState {uf, eqs, exacts} <- readStat
-  put $ (UnionFind.union l r uf, eqs, exacts)
+  stat <- readStat
+  put $ (UnionFind.union l r stat.uf, stat.eqs, stat.exacts, stat.pluses)
 
 putExact :: Id -> Double -> SolverM ()
 putExact id v = do
   stat <- readStat
   let exacts = [(id, v)] ++ stat.exacts
-  put (stat.uf, stat.eqs, exacts)
+  put (stat.uf, stat.eqs, exacts, stat.pluses)
 
 putEq :: Id -> Id -> SolverM ()
 putEq id1 id2 = do
   stat <- readStat
   let eqs = [(id1, id2)] ++ stat.eqs
-  put (stat.uf, eqs, stat.exacts)
+  put (stat.uf, eqs, stat.exacts, stat.pluses)
 
 cos :: (Floating b) => b -> b
 cos degree = degree * (pi / 180) & Prelude.cos

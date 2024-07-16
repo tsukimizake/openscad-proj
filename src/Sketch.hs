@@ -21,6 +21,8 @@ module Sketch
     poly,
     sketchPoly,
     sketchPolys,
+    rely,
+    relx,
   )
 where
 
@@ -33,12 +35,6 @@ import OpenSCAD (Model2d)
 import SketchSolver (runSolver)
 import SketchTypes
 import Prelude hiding (id)
-
-putExact :: Id -> Double -> SketchM ()
-putExact id v = tell [Exact id v]
-
-putEq :: Id -> Id -> SketchM ()
-putEq id1 id2 = tell [Eq id1 id2]
 
 --- SOLVER
 
@@ -96,6 +92,18 @@ chamfer val m = do
   (Point x_ y_ _) <- m
   pure $ Point x_ y_ val
 
+relx :: Point -> Double -> SketchM Point -> SketchM Point
+relx fromPoint distance m = do
+  newPoint <- m
+  putPlus newPoint.x fromPoint.x distance
+  pure newPoint
+
+rely :: Point -> Double -> SketchM Point -> SketchM Point
+rely fromPoint distance m = do
+  newPoint <- m
+  putPlus newPoint.y fromPoint.y distance
+  pure newPoint
+
 --- LINE
 
 line :: SketchM Line
@@ -133,3 +141,14 @@ intersectionPoint l1 l2 = do
   onLine p l1
   onLine p l2
   pure p
+
+-- helpers
+putExact :: Id -> Double -> SketchM ()
+putExact id v = tell [Exact id v]
+
+putEq :: Id -> Id -> SketchM ()
+putEq id1 id2 = tell [Eq id1 id2]
+
+putPlus :: Id -> Id -> Double -> SketchM ()
+putPlus idl idr distance = do
+  tell [Plus idl idr distance]

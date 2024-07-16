@@ -1,6 +1,7 @@
+{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
+
 module IronBrushCase (obj, run) where
 
-import Data.Either (fromRight)
 import Data.Function ((&))
 import OpenSCAD
 import Sketch
@@ -17,9 +18,10 @@ obj =
           outv4 <- line & from cout & degree 90
           bout <- intersectionPoint outv2 outv3
           dout <- intersectionPoint outv1 outv4
-          out <- poly [aout, bout, cout, dout]
+          out_ <- poly [aout, bout, cout, dout]
 
           ain <- point & x 5 & y 5
+          -- ain <- point & relx a 5 & rely a 5 みたいにしたいね
           inv1 <- line & from ain & degree 0
           inv2 <- line & from ain & degree 90
           cin <- point & x 35 & y 28
@@ -27,8 +29,8 @@ obj =
           inv4 <- line & from cin & degree 90
           bin <- intersectionPoint inv2 inv3
           din <- intersectionPoint inv1 inv4
-          inn <- poly [ain, bin, cin, din]
-          pure [out, inn]
+          inn_ <- poly [ain, bin, cin, din]
+          pure [out_, inn_]
 
     let ~(Right sideimpl) = sketchPoly do
           a <- point & x 0 & y 0
