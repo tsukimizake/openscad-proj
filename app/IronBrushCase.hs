@@ -20,11 +20,10 @@ obj =
           dout <- intersectionPoint outv1 outv4
           out_ <- poly [aout, bout, cout, dout]
 
-          ain <- point & x 5 & y 5
-          -- ain <- point & relx a 5 & rely a 5 みたいにしたいね
+          ain <- point & relx aout 5 & rely aout 5
           inv1 <- line & from ain & degree 0
           inv2 <- line & from ain & degree 90
-          cin <- point & x 35 & y 28
+          cin <- point & relx ain 30 & rely ain 23
           inv3 <- line & from cin & degree 0
           inv4 <- line & from cin & degree 90
           bin <- intersectionPoint inv2 inv3

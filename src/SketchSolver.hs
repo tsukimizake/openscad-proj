@@ -72,7 +72,7 @@ runSolverImpl (sk, cs) =
       eqs = mapMaybe (\case Eq l r -> Just (l, r); _ -> Nothing) cs
       intersections = mapMaybe (\case Intersection l r p -> Just (l, r, p); _ -> Nothing) cs
       pluses = mapMaybe (\case Plus l r d -> Just (l, r, d); _ -> Nothing) cs
-   in (repeatUntilFixpoint (solveIntersections >> solveOnLines >> solveUf) >> validateAllJust >> generateModel)
+   in (repeatUntilFixpoint (solveIntersections >> solveOnLines >> solvePluses >> solveUf) >> validateAllJust >> generateModel)
         & runState (emptyUF, eqs, exacts, pluses)
         & runReader (onLines, sk, intersections)
         & fmap fst
@@ -261,6 +261,29 @@ unifyIds l r = do
       pure ()
 
 ----------
+-- Pluses
+----------
+
+solvePluses :: SolverM ()
+solvePluses = do
+  SolverState {pluses} <- readStat
+  mapM_ solvePlus pluses
+
+solvePlus :: (Id, Id, Double) -> SolverM ()
+solvePlus (l, r, diff) = do
+  liftA2 (,) (getValue l) (getValue r) >>= \case
+    (Just lv, Just rv) -> do
+      if lv == rv + diff
+        then pure ()
+        else do
+          throwContradictionWithDiff (l, lv) (r, rv) diff
+    (Just lv, Nothing) -> do
+      putExact r (diff - lv)
+    (Nothing, Just rv) -> do
+      putExact l (diff + rv)
+    _ -> pure ()
+
+----------
 -- helpers
 ----------
 
@@ -348,4 +371,18 @@ throwContradiction (l, lv) (r, rv) = do
           ++ ", "
           ++ (show r ++ ":" ++ show rv)
           ++ ("\nin " ++ show sketch)
+    )
+
+throwContradictionWithDiff :: (Id, Double) -> (Id, Double) -> Double -> SolverM ()
+throwContradictionWithDiff (l, lv) (r, rv) diff = do
+  SolverState {sketch} <- readStat
+
+  throwError
+    ( Contradiction $
+        "Exact values are not equal: "
+          ++ (show l ++ ":" ++ show lv)
+          ++ ", "
+          ++ (show r ++ ":" ++ show rv)
+          ++ (" + diff:" ++ show diff)
+          ++ ("in " ++ show sketch)
     )
