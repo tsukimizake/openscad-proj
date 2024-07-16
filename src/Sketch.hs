@@ -23,6 +23,8 @@ module Sketch
     sketchPolys,
     rely,
     relx,
+    onYAxis,
+    onXAxis,
   )
 where
 
@@ -31,7 +33,7 @@ import Control.Monad.Freer.State
 import Control.Monad.Freer.Writer (runWriter, tell)
 import Data.Function ((&))
 import qualified Data.List as List
-import OpenSCAD (Model2d, errorAssert)
+import OpenSCAD (Model2d, Model3d, errorAssert, mirror, rotate3d)
 import SketchSolver (runSolver)
 import SketchTypes
 import Prelude hiding (id)
@@ -159,3 +161,10 @@ putEq id1 id2 = tell [Eq id1 id2]
 putPlus :: Id -> Id -> Double -> SketchM ()
 putPlus idl idr distance = do
   tell [Plus idl idr distance]
+
+-- utils for user
+onYAxis :: Model3d -> Model3d
+onYAxis m = m & rotate3d (90, 0, 0) & mirror (0, 1, 0)
+
+onXAxis :: Model3d -> Model3d
+onXAxis m = m & rotate3d (0, -90, 0) & mirror (1, 0, 0)

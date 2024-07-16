@@ -33,7 +33,7 @@ obj =
           daa <- point & x 21 & y 0
           c <- (intersectionPoint vtop =<< (line & from d & degree 90)) & chamfer 3
           poly [a, b, c, d, dda, da, daa]
-    let side = sideimpl & linearExtrudeDefault 120 & rotate3d (90, 0, 0) & mirror (0, 1, 0)
+    let side = sideimpl & linearExtrudeDefault 120 & onYAxis
     linearExtrudeDefault 150 (difference out inn)
       & with intersection side
       & with union (linearExtrudeDefault 5 out & translate (0, 0, 3))
