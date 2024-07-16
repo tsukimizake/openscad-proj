@@ -11,23 +11,15 @@ obj =
   do
     let ~(Right [out, inn]) = sketchPolys do
           aout <- point & x 0 & y 0
-          outv1 <- line & from aout & degree 0
-          outv2 <- line & from aout & degree 90
-          cout <- point & x 40 & y 34
-          outv3 <- line & from cout & degree 0
-          outv4 <- line & from cout & degree 90
-          bout <- intersectionPoint outv2 outv3
-          dout <- intersectionPoint outv1 outv4
+          bout <- point & relx aout 0 & rely aout 34
+          cout <- point & relx bout 40 & rely bout 0
+          dout <- point & relx cout 0 & rely cout (-34)
           out_ <- poly [aout, bout, cout, dout]
 
           ain <- point & relx aout 5 & rely aout 5
-          inv1 <- line & from ain & degree 0
-          inv2 <- line & from ain & degree 90
+          bin <- point & relx ain 30 & rely ain 0
           cin <- point & relx ain 30 & rely ain 23
-          inv3 <- line & from cin & degree 0
-          inv4 <- line & from cin & degree 90
-          bin <- intersectionPoint inv2 inv3
-          din <- intersectionPoint inv1 inv4
+          din <- point & relx ain 0 & rely ain 23
           inn_ <- poly [ain, bin, cin, din]
           pure [out_, inn_]
 
@@ -42,7 +34,10 @@ obj =
           c <- (intersectionPoint vtop =<< (line & from d & degree 90)) & chamfer 3
           poly [a, b, c, d, dda, da, daa]
     let side = sideimpl & linearExtrudeDefault 120 & rotate3d (90, 0, 0) & mirror (0, 1, 0)
-    intersection [linearExtrudeDefault 150 $ difference out inn, side] & with union (linearExtrudeDefault 5 out & translate (0, 0, 3)) & pure
+    linearExtrudeDefault 150 (difference out inn)
+      & with intersection side
+      & with union (linearExtrudeDefault 5 out & translate (0, 0, 3))
+      & pure
 
 run :: IO ()
 run =

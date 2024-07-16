@@ -21,8 +21,7 @@ main = hspec $ do
             b <- point & x 4 & y 0
             c <- point & x 4 & y 4
             d <- point & x 0 & y 4
-            r <- poly [a, b, c, d]
-            pure [r]
+            poly [a, b, c, d]
       rect `shouldBe` Right (polygon 3 [[(0, 0), (4, 0), (4, 4), (0, 4)]])
 
     it "pitagoras1" do
@@ -76,3 +75,11 @@ main = hspec $ do
             c <- intersectionPoint v1 v2
             poly =<< traverse (chamfer 0.5 . pure) [a, b, c]
       chamferPita `shouldBe` Right ((polygon 3 [[(0.4472135954999579, 0.22360679774997894), (0.5, 0.0), (3.5, 0.0), (4.0, 0.5), (4.0, 1.4999999999999998), (3.552786404500042, 1.7763932022500208)]]))
+    it "rect by relx/rely" do
+      let rect = sketchPoly do
+            a <- point & x 0 & y 0
+            b <- point & relx a 4 & rely a 0
+            c <- point & relx b 0 & rely b 4
+            d <- point & relx c (-4) & rely c 0
+            poly [a, b, c, d]
+      rect `shouldBe` Right (polygon 3 [[(0, 0), (4, 0), (4, 4), (0, 4)]])
