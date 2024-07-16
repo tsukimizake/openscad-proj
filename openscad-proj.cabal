@@ -65,6 +65,7 @@ executable openscad-proj-exe
       AirClothCap
       HexCup
       HonexCombTest
+      IronBrushCase
       IveCaster
       IveFrontAdapter2
       IveFrontCaster2

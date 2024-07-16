@@ -19,7 +19,8 @@ module Sketch
     degree,
     intersectionPoint,
     poly,
-    sketchMono,
+    sketchPoly,
+    sketchPolys,
   )
 where
 
@@ -41,23 +42,30 @@ putEq id1 id2 = tell [Eq id1 id2]
 
 --- SOLVER
 
-sketch :: SketchM [Polygon] -> Either SketchError [Model2d]
+sketch :: SketchM ([Polygon], [Point]) -> Either SketchError ([Model2d], [Point])
 sketch m =
   m
-    & fmap (List.map wrapShape)
+    & fmap (\(polys, pts) -> (List.map wrapShape polys, pts))
     & (runState 0)
     & fmap fst
     & runWriter
     & run
     & runSolver
 
-sketchMono :: SketchM Polygon -> Either SketchError Model2d
-sketchMono m =
+sketchPolys :: SketchM [Polygon] -> Either SketchError [Model2d]
+sketchPolys m =
   m
-    & fmap (: [])
+    & fmap (\polys -> (polys, []))
+    & sketch
+    & fmap fst
+
+sketchPoly :: SketchM Polygon -> Either SketchError Model2d
+sketchPoly m =
+  m
+    & fmap (\apoly -> ([apoly], []))
     & sketch
     & fmap \case
-      [r] -> r
+      ([r], []) -> r
       _ -> error "should not happen"
 
 genId :: SketchM Id

@@ -16,17 +16,17 @@ main :: IO ()
 main = hspec $ do
   describe "SketchExamples" $ do
     it "rect" do
-      let rect = sketch do
+      let rect = sketchPoly do
             a <- point & x 0 & y 0
             b <- point & x 4 & y 0
             c <- point & x 4 & y 4
             d <- point & x 0 & y 4
             r <- poly [a, b, c, d]
             pure [r]
-      rect `shouldBe` Right [(polygon 3 [[(0, 0), (4, 0), (4, 4), (0, 4)]])]
+      rect `shouldBe` Right (polygon 3 [[(0, 0), (4, 0), (4, 4), (0, 4)]])
 
     it "pitagoras1" do
-      let pitagoras1 = sketchMono do
+      let pitagoras1 = sketchPoly do
             a <- point & x 0 & y 0
             b <- point & x 4 & y 0
             v1 <- line & from a & degree 30
@@ -36,7 +36,7 @@ main = hspec $ do
       pitagoras1 `shouldBe` Right (polygon 3 [[(0.0, 0.0), (4.0, 0.0), (4.0, 1.9999999999999998)]])
 
     it "pitagoras2" do
-      let pitagoras2 = sketchMono do
+      let pitagoras2 = sketchPoly do
             a <- point & x 0 & y 0
             b <- point & x 4 -- y is not set, but solved with constraints
             v1 <- line & from a & degree 0
@@ -47,7 +47,7 @@ main = hspec $ do
             poly [a, b, c]
       pitagoras2 `shouldBe` Right (polygon 3 [[(0.0, 0.0), (4.0, 0.0), (4.0, 1.9999999999999998)]])
     it "pitagoras3" do
-      let pitagoras3 = sketchMono do
+      let pitagoras3 = sketchPoly do
             a <- point & x 0 -- y is not set, but solved with constraints
             b <- point & x 4 & y 0
             v1 <- line & from a & degree 0
@@ -59,7 +59,7 @@ main = hspec $ do
       pitagoras3 `shouldBe` Right (polygon 3 [[(0.0, 0.0), (4.0, 0.0), (4.0, 1.9999999999999998)]])
 
     it "isoceles" do
-      let isoceles = sketchMono do
+      let isoceles = sketchPoly do
             a <- point & x 0 & y 0
             b <- point & x 4 & y 0
             v1 <- line & from a & degree 40
@@ -68,7 +68,7 @@ main = hspec $ do
             poly [a, b, c]
       isoceles `shouldBe` Right (polygon 3 [[(0.0, 0.0), (4.0, 0.0), (2.0000000000000004, 1.6781992623545603)]])
     it "chamferPita" do
-      let chamferPita = sketchMono do
+      let chamferPita = sketchPoly do
             a <- point & x 0 & y 0
             b <- point & x 4 & y 0
             v1 <- line & from a & degree 30

@@ -14,8 +14,10 @@ import Control.Monad.Freer
 import Control.Monad.Freer.Error
 import Control.Monad.Freer.Reader (Reader, ask, runReader)
 import Control.Monad.Freer.State
+import Data.Either
 import Data.Function ((&))
 import Data.Kind (Type)
+import qualified Data.List as List
 import Data.Maybe
 import Debug.Trace
 import OpenSCAD (Model2d, polygon)
@@ -43,11 +45,24 @@ data SolverState = SolverState
     intersections :: Intersections
   }
 
-runSolver :: ([Sketch], [Constraint]) -> Either SketchError [Model2d]
-runSolver (sketches, constraints) = do
-  sketches & mapM (\sk -> runSolverImpl (sk, constraints))
+data Result
+  = ModelRes Model2d
+  | PointRes Point
+  deriving (Show)
 
-runSolverImpl :: (Sketch, [Constraint]) -> Either SketchError Model2d
+runSolver :: (([Sketch], [Point]), [Constraint]) -> Either SketchError ([Model2d], [Point])
+runSolver ((sketches, points), constraints) = do
+  sks <- sketches & mapM (\sk -> runSolverImpl (sk, constraints))
+  pts <- points & mapM (\p -> runSolverImpl (P p, constraints))
+  sks ++ pts
+    & ( List.map \case
+          ModelRes m -> Left m
+          PointRes p -> Right p
+      )
+    & partitionEithers
+    & pure
+
+runSolverImpl :: (Sketch, [Constraint]) -> Either SketchError Result
 runSolverImpl (sk, cs) =
   let onLines = mapMaybe (\case OnLine p l -> Just (p, l); _ -> Nothing) cs
       exacts = mapMaybe (\case Exact id v -> Just (id, v); _ -> Nothing) cs
@@ -74,12 +89,12 @@ repeatUntilFixpoint m = do
 -- Finalize
 --------------
 
-generateModel :: SolverM Model2d
+generateModel :: SolverM Result
 generateModel = do
   SolverState {sketch} <- readStat
   generateModelImpl sketch
   where
-    generateModelImpl :: Sketch -> SolverM Model2d
+    generateModelImpl :: Sketch -> SolverM Result
     generateModelImpl (Poly (Polygon ps)) = do
       rs <- forM (zip3 (drop (length ps - 1) $ cycle ps) ps (drop 1 $ cycle ps)) $
         \(prev, Point x y chamfer, next) -> do
@@ -106,7 +121,7 @@ generateModel = do
                   y2 = y' + sin2 * chamfer
               pure [(x1, y1), (x2, y2)]
 
-      pure $ polygon 3 [concat rs]
+      pure $ ModelRes $ polygon 3 [concat rs]
     generateModelImpl _ = undefined
 
 validateAllJust :: SolverM ()
@@ -291,7 +306,7 @@ parentIsExact id = do
 updateUf :: Id -> Id -> SolverM ()
 updateUf l r = do
   SolverState {uf, eqs, exacts} <- readStat
-  put $ (union l r uf, eqs, exacts)
+  put $ (UnionFind.union l r uf, eqs, exacts)
 
 putExact :: Id -> Double -> SolverM ()
 putExact id v = do
