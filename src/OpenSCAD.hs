@@ -786,8 +786,9 @@ instance (Vector v) => PP.Pretty (Model v) where
       Child direction child parent ->
         renderTransform (PP.pretty direction) [child, parent]
     where
+      renderTransform :: (Vector v1) => PP.Doc ann -> [Model v1] -> PP.Doc ann
       renderTransform op ms = op <+> renderSubModels ms
-      renderSubModels :: (Vector v) => [Model v] -> PP.Doc ann
+      renderSubModels :: (Vector v1) => [Model v1] -> PP.Doc ann
       renderSubModels = \case
         [m] -> PP.nest 2 $ PP.line' <> PP.pretty m
         ms ->

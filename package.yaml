@@ -38,6 +38,9 @@ default-extensions:
   - OverloadedRecordDot
   - NoFieldSelectors
   - DuplicateRecordFields
+  - ScopedTypeVariables
+  - NamedFieldPuns
+  - TypeFamilies
 
 library:
   source-dirs: src

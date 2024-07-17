@@ -1,5 +1,3 @@
-{-# LANGUAGE GeneralizedNewtypeDeriving #-}
-
 module SketchTypes
   ( SketchM,
     Angle,
@@ -63,6 +61,7 @@ data Constraint
   | OnLine Point Line
   | Plus Id Id Double --  left = right + distance
   | Intersection Line Line Point
+  | WideLine Double (Point, Point) (Point, Point, Point, Point)
   deriving (Show, Eq, Ord)
 
 class Shape a where

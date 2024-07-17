@@ -1,11 +1,3 @@
-{-# LANGUAGE NamedFieldPuns #-}
-{-# LANGUAGE ScopedTypeVariables #-}
-{-# LANGUAGE TypeFamilies #-}
-{-# LANGUAGE ViewPatterns #-}
-{-# OPTIONS_GHC -Wno-incomplete-uni-patterns #-}
-{-# OPTIONS_GHC -Wno-unrecognisepointd-pragmas #-}
-{-# OPTIONS_GHC -Wno-unused-top-binds #-}
-
 module SketchSolver (runSolver) where
 
 import Control.Applicative (liftA3)
@@ -20,13 +12,13 @@ import Data.Kind (Type)
 import qualified Data.List as List
 import Data.Maybe
 import Debug.Trace
-import OpenSCAD (Model2d, polygon)
+import OpenSCAD (Model2d, Vector2d, polygon)
 import SketchTypes
 import UnionFind (UnionFind, emptyUF, find, union)
-import Prelude hiding (cos, id, sin, tan)
+import Prelude hiding (atan2, cos, id, sin, tan)
 import qualified Prelude
 
-type SolverM = Eff '[State (UnionFind, Eqs, Exacts, Pluses), Reader (OnLines, Sketch, Intersections), Error SketchError]
+type SolverM = Eff '[State (UnionFind, Eqs, Exacts, Pluses), Reader (OnLines, Sketch, Intersections, WideLines), Error SketchError]
 
 type Intersections = [(Line, Line, Point)]
 
@@ -38,6 +30,8 @@ type Eqs = [(Id, Id)]
 
 type Pluses = [(Id, Id, Double)]
 
+type WideLines = [(Double, (Point, Point), (Point, Point, Point, Point))]
+
 data SolverState = SolverState
   { uf :: UnionFind,
     onLines :: OnLines,
@@ -45,22 +39,29 @@ data SolverState = SolverState
     pluses :: Pluses,
     eqs :: Eqs,
     sketch :: Sketch,
-    intersections :: Intersections
+    intersections :: Intersections,
+    wideLines :: WideLines
   }
+
+readStat :: SolverM SolverState
+readStat = do
+  (uf, eqs, exacts, pluses) <- get
+  (onLines, sk, intersections, wideLines) <- ask
+  pure $ SolverState uf onLines exacts pluses eqs sk intersections wideLines
 
 data Result
   = ModelRes Model2d
-  | PointRes Point
+  | PointRes Double Double
   deriving (Show)
 
-runSolver :: (([Sketch], [Point]), [Constraint]) -> Either SketchError ([Model2d], [Point])
+runSolver :: (([Sketch], [Point]), [Constraint]) -> Either SketchError ([Model2d], [Vector2d])
 runSolver ((sketches, points), constraints) = do
   sks <- sketches & mapM (\sk -> runSolverImpl (sk, constraints))
   pts <- points & mapM (\p -> runSolverImpl (P p, constraints))
   sks ++ pts
     & ( List.map \case
           ModelRes m -> Left m
-          PointRes p -> Right p
+          PointRes px py -> Right (px, py)
       )
     & partitionEithers
     & pure
@@ -72,9 +73,10 @@ runSolverImpl (sk, cs) =
       eqs = mapMaybe (\case Eq l r -> Just (l, r); _ -> Nothing) cs
       intersections = mapMaybe (\case Intersection l r p -> Just (l, r, p); _ -> Nothing) cs
       pluses = mapMaybe (\case Plus l r d -> Just (l, r, d); _ -> Nothing) cs
-   in (repeatUntilFixpoint (solveIntersections >> solveOnLines >> solvePluses >> solveUf) >> validateAllJust >> generateModel)
+      wideLines = mapMaybe (\case WideLine w l r -> Just (w, l, r); _ -> Nothing) cs
+   in (repeatUntilFixpoint (solveIntersections >> solveOnLines >> solvePluses >> solveWideLines >> solveUf) >> validateAllJust >> generateModel)
         & runState (emptyUF, eqs, exacts, pluses)
-        & runReader (onLines, sk, intersections)
+        & runReader (onLines, sk, intersections, wideLines)
         & fmap fst
         & runError
         & run
@@ -85,8 +87,9 @@ repeatUntilFixpoint m = do
   beforeStat <- readStat
   res <- m
   afterStat <- readStat
-  if beforeStat.uf == afterStat.uf
-    then pure res
+  if beforeStat.uf == afterStat.uf && beforeStat.exacts == afterStat.exacts
+    then
+      pure res
     else repeatUntilFixpoint m
 
 --------------
@@ -126,7 +129,13 @@ generateModel = do
               pure [(x1, y1), (x2, y2)]
 
       pure $ ModelRes $ polygon 3 [concat rs]
-    generateModelImpl _ = undefined
+    generateModelImpl (P p) = do
+      x <- getValue p.x >>= assertJust
+      y <- getValue p.y >>= assertJust
+      pure $ PointRes x y
+    generateModelImpl x = do
+      traceShowM x
+      undefined
 
 validateAllJust :: SolverM ()
 validateAllJust = do
@@ -212,23 +221,27 @@ solveOnLine (p, l) = do
     Just 180 -> putEq p.y l.y
     Just 270 -> putEq p.x l.x
     _ -> do
-      liftA2 (,) (getValue p) (getValue l) >>= \case
-        ((Nothing, Just y), (Just lx, Just _ly, Just angle)) -> do
-          let x = lx + cos angle * y
-          putExact p.x x
-        ((Just x, Nothing), (Just _lx, Just ly, Just angle)) -> do
-          let y = ly + sin angle * x
-          putExact p.y y
-        ((Just x, Just y), (Nothing, Just _ly, Just angle)) -> do
-          let lx = x - cos angle * y
-          putExact l.x lx
-        ((Just x, Just y), (Just _lx, Nothing, Just angle)) -> do
-          let ly = y - sin angle * x
-          putExact l.y ly
-        ((Just x, Just y), (Just lx, Just ly, Nothing)) -> do
-          let angle = atan2 (y - ly) (x - lx)
-          putExact l.angle angle
-        _ -> pure ()
+      liftA2 (,) (getValue p) (getValue l)
+        >>= \case
+          ((Nothing, Just y), (Just lx, Just _ly, Just angle)) -> do
+            let x = lx + cos angle * y
+            putExact p.x x
+          ((Just x_, Nothing), (Just _lx, Just ly, Just angle)) -> do
+            let y = ly + sin angle * x_
+            putExact p.y y
+          ((Just x, Just y), (Nothing, Just _ly, Just angle)) -> do
+            let lx = x - cos angle * y
+            putExact l.x lx
+          ((Just x, Just y), (Just _lx, Nothing, Just angle)) -> do
+            let ly = y - sin angle * x
+            putExact l.y ly
+          ((Just x, Just y), (Just lx, Just ly, Nothing)) -> do
+            let angle = atan2 (y - ly) (x - lx)
+            putExact l.angle angle
+          ((Just x, Just y), (Nothing, Nothing, _)) -> do
+            putExact l.x x
+            putExact l.y y
+          _ -> pure ()
 
 --------------
 -- UF
@@ -238,12 +251,6 @@ solveUf :: SolverM ()
 solveUf = do
   SolverState {eqs} <- readStat
   mapM_ (uncurry unifyIds) eqs
-
-readStat :: SolverM SolverState
-readStat = do
-  (uf, eqs, exacts, pluses) <- get
-  (onLines, sk, intersections) <- ask
-  pure $ SolverState uf onLines exacts pluses eqs sk intersections
 
 unifyIds :: Id -> Id -> SolverM ()
 unifyIds l r = do
@@ -281,6 +288,38 @@ solvePlus (l, r, diff) = do
       putExact r (diff - lv)
     (Nothing, Just rv) -> do
       putExact l (diff + rv)
+    _ -> pure ()
+
+----------
+-- WideLines
+----------
+
+solveWideLines :: SolverM ()
+solveWideLines = do
+  SolverState {wideLines} <- readStat
+  mapM_ solveWideLine wideLines
+
+solveWideLine :: (Double, (Point, Point), (Point, Point, Point, Point)) -> SolverM ()
+solveWideLine (width, (f, t), (a, b, c, d)) = do
+  (,,,,,) <$> getValue f <*> getValue t <*> getValue a <*> getValue b <*> getValue c <*> getValue d >>= \case
+    ((Just fx, Just fy), (Just tx, Just ty), (Nothing, Nothing), (Nothing, Nothing), (Nothing, Nothing), (Nothing, Nothing)) -> do
+      let angle = atan2 (ty - fy) (tx - fx)
+          ax = fx + cos (angle - 90) * width
+          ay = fy + sin (angle - 90) * width
+      putExact a.x ax
+      putExact a.y ay
+      let bx = tx + cos (angle - 90) * width
+          by = ty + sin (angle - 90) * width
+      putExact b.x bx
+      putExact b.y by
+      let cx = tx + cos (angle + 90) * width
+          cy = ty + sin (angle + 90) * width
+      putExact c.x cx
+      putExact c.y cy
+      let dx = fx + cos (angle + 90) * width
+          dy = fy + sin (angle + 90) * width
+      putExact d.x dx
+      putExact d.y dy
     _ -> pure ()
 
 ----------
@@ -355,6 +394,9 @@ sin degree = degree * (pi / 180) & Prelude.sin
 
 tan :: (Floating b) => b -> b
 tan degree = degree * (pi / 180) & Prelude.tan
+
+atan2 :: Double -> Double -> Double
+atan2 y x = Prelude.atan2 y x * 180 / pi
 
 ----------
 -- error functions

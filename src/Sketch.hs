@@ -1,7 +1,3 @@
-{-# LANGUAGE DataKinds #-}
-{-# LANGUAGE FlexibleContexts #-}
-{-# LANGUAGE GADTs #-}
-{-# LANGUAGE ScopedTypeVariables #-}
 {-# HLINT ignore "Use <$>" #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
@@ -17,6 +13,7 @@ module Sketch
     onLine,
     from,
     degree,
+    between,
     intersectionPoint,
     poly,
     sketchPoly,
@@ -25,6 +22,7 @@ module Sketch
     relx,
     onYAxis,
     onXAxis,
+    wideLine,
   )
 where
 
@@ -33,14 +31,15 @@ import Control.Monad.Freer.State
 import Control.Monad.Freer.Writer (runWriter, tell)
 import Data.Function ((&))
 import qualified Data.List as List
-import OpenSCAD (Model2d, Model3d, errorAssert, mirror, rotate3d)
+import Debug.Trace
+import OpenSCAD (Model2d, Model3d, Vector2d, errorAssert, mirror, rotate3d)
 import SketchSolver (runSolver)
 import SketchTypes
 import Prelude hiding (id)
 
 --- SOLVER
 
-sketch :: SketchM ([Polygon], [Point]) -> ([Model2d], [Point])
+sketch :: SketchM ([Polygon], [Point]) -> ([Model2d], [Vector2d])
 sketch m =
   m
     & fmap (\(polys, pts) -> (List.map wrapShape polys, pts))
@@ -51,7 +50,7 @@ sketch m =
     & runSolver
     & encodeError
 
-encodeError :: Either SketchError ([Model2d], [Point]) -> ([Model2d], [Point])
+encodeError :: Either SketchError ([Model2d], [Vector2d]) -> ([Model2d], [Vector2d])
 encodeError = \case
   Right r -> r
   Left (Contradiction s) -> ([errorAssert s], [])
@@ -139,6 +138,22 @@ onLine l p = do
   tell [OnLine p l]
   pure p
 
+between :: Point -> Point -> SketchM Line -> SketchM Line
+between p1 p2 m = do
+  l <- m
+  _ <- onLine l p1
+  _ <- onLine l p2
+  pure l
+
+wideLine :: Double -> Point -> Point -> SketchM (Polygon)
+wideLine width f t = do
+  a <- point
+  b <- point
+  c <- point
+  d <- point
+  tell [WideLine width (f, t) (a, b, c, d)]
+  poly [a, b, c, d]
+
 --- POLYGON
 poly :: [Point] -> SketchM Polygon
 poly = pure . Polygon
@@ -149,8 +164,8 @@ intersectionPoint :: Line -> Line -> SketchM Point
 intersectionPoint l1 l2 = do
   p <- point
   tell [Intersection l1 l2 p]
-  onLine l1 p
-  onLine l2 p
+  _ <- onLine l1 p
+  _ <- onLine l2 p
   pure p
 
 -- helpers

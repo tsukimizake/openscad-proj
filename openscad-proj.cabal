@@ -47,6 +47,9 @@ library
       OverloadedRecordDot
       NoFieldSelectors
       DuplicateRecordFields
+      ScopedTypeVariables
+      NamedFieldPuns
+      TypeFamilies
       LambdaCase
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
@@ -93,6 +96,9 @@ executable openscad-proj-exe
       OverloadedRecordDot
       NoFieldSelectors
       DuplicateRecordFields
+      ScopedTypeVariables
+      NamedFieldPuns
+      TypeFamilies
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
@@ -121,6 +127,9 @@ test-suite sketch-test
       OverloadedRecordDot
       NoFieldSelectors
       DuplicateRecordFields
+      ScopedTypeVariables
+      NamedFieldPuns
+      TypeFamilies
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
