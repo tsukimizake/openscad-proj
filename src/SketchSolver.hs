@@ -39,11 +39,6 @@ readStat = do
   (onLines, sk, intersections, wideLines) <- ask
   pure $ SolverState uf onLines exacts pluses eqs sk intersections wideLines
 
-data Result
-  = ModelRes Model2d
-  | PointRes Double Double
-  deriving (Show)
-
 runSolver :: (([Sketch], [Point]), [Constraint]) -> Either SketchError ([Model2d], [Vector2d])
 runSolver ((sketches, points), cs) =
   let onLines = mapMaybe (\case OnLine p l -> Just (p, l); _ -> Nothing) cs
@@ -52,7 +47,9 @@ runSolver ((sketches, points), cs) =
       intersections = mapMaybe (\case Intersection l r p -> Just (l, r, p); _ -> Nothing) cs
       pluses = mapMaybe (\case Plus l r d -> Just (l, r, d); _ -> Nothing) cs
       wideLines = mapMaybe (\case WideLine w l r -> Just (w, l, r); _ -> Nothing) cs
-   in ( runSolverImpl
+   in ( repeatUntilFixpoint (solveIntersections >> solveOnLines >> solvePluses >> solveWideLines >> solveUf)
+          >> validateAllJust
+          >> generateModel
           <&> partitionEithers . List.map \case
             ModelRes m -> Left m
             PointRes px py -> Right (px, py)
@@ -62,10 +59,6 @@ runSolver ((sketches, points), cs) =
         & runError
         & run
         & fmap fst
-
-runSolverImpl :: SolverM [Result]
-runSolverImpl =
-  repeatUntilFixpoint (solveIntersections >> solveOnLines >> solvePluses >> solveWideLines >> solveUf) >> validateAllJust >> generateModel
 
 repeatUntilFixpoint :: SolverM a -> SolverM a
 repeatUntilFixpoint m = do

@@ -26,12 +26,14 @@ module Sketch
     onXAxis,
     wideLine,
     rectSketch,
+    sketchTuple,
   )
 where
 
 import Control.Monad.Freer
 import Control.Monad.Freer.State
 import Control.Monad.Freer.Writer (runWriter, tell)
+import qualified Data.Bifunctor
 import Data.Function ((&))
 import qualified Data.List as List
 import Debug.Trace
@@ -41,6 +43,22 @@ import SketchTypes
 import Prelude hiding (id)
 
 --- SOLVER
+
+sketchTuple :: (Models models, Points points) => SketchM (models, points) -> (Res models, PointRes points)
+sketchTuple m =
+  m
+    & fmap (Data.Bifunctor.bimap toList toPointList)
+    & runState 0
+    & fmap fst
+    & runWriter
+    & run
+    & ( \((sks, pts), cs) ->
+          runSolver ((List.map fst sks, List.map fst pts), cs)
+            & encodeError
+            & Data.Bifunctor.bimap
+              (\skr -> fromList (zip (List.map ModelRes skr) (List.map snd sks)))
+              (\ptr -> fromPointList (zip (List.map (uncurry PointRes) ptr) (List.map snd pts)))
+      )
 
 sketch :: SketchM ([Polygon], [Point]) -> ([Model2d], [Vector2d])
 sketch m =
