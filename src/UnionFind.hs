@@ -1,10 +1,7 @@
 module UnionFind (UnionFind, emptyUF, find, union) where
 
-import Data.Map (Map)
 import qualified Data.Map as Map
-import SketchTypes (Id)
-
-newtype UnionFind = UnionFind {parent :: Map Id Id} deriving (Show, Eq)
+import SketchTypes
 
 emptyUF :: UnionFind
 emptyUF = UnionFind Map.empty
