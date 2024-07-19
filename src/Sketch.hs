@@ -1,3 +1,5 @@
+{-# HLINT ignore "Use first" #-}
+{-# LANGUAGE TupleSections #-}
 {-# HLINT ignore "Use <$>" #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
@@ -23,6 +25,7 @@ module Sketch
     onYAxis,
     onXAxis,
     wideLine,
+    rectSketch,
   )
 where
 
@@ -43,7 +46,7 @@ sketch :: SketchM ([Polygon], [Point]) -> ([Model2d], [Vector2d])
 sketch m =
   m
     & fmap (\(polys, pts) -> (List.map wrapShape polys, pts))
-    & (runState 0)
+    & runState 0
     & fmap fst
     & runWriter
     & run
@@ -59,7 +62,7 @@ encodeError = \case
 sketchPolys :: SketchM [Polygon] -> [Model2d]
 sketchPolys m =
   m
-    & fmap (\polys -> (polys, []))
+    & fmap (,[])
     & sketch
     & fst
 
@@ -145,7 +148,7 @@ between p1 p2 m = do
   _ <- onLine l p2
   pure l
 
-wideLine :: Double -> Point -> Point -> SketchM (Polygon)
+wideLine :: Double -> Point -> Point -> SketchM Polygon
 wideLine width f t = do
   a <- point
   b <- point
@@ -153,6 +156,18 @@ wideLine width f t = do
   d <- point
   tell [WideLine width (f, t) (a, b, c, d)]
   poly [a, b, c, d]
+
+-- RECT
+
+rectSketch :: Point -> Point -> SketchM (Point, Point)
+rectSketch bottomLeft topRight = do
+  bottom <- line & from bottomLeft & degree 0
+  top <- line & from topRight & degree 0
+  left <- line & from bottomLeft & degree 90
+  right <- line & from topRight & degree 90
+  b <- intersectionPoint bottom right
+  d <- intersectionPoint top left
+  pure (b, d)
 
 --- POLYGON
 poly :: [Point] -> SketchM Polygon

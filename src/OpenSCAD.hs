@@ -521,7 +521,7 @@ screw s h l = Solid $ Screw s h l
 screwHole :: ScrewSize -> Int -> Bool -> Model3d
 screwHole s l thread = Solid $ ScrewHole s l thread
 
-with :: ([Model3d] -> Model3d) -> Model3d -> Model3d -> Model3d
+with :: (Vector v) => ([Model v] -> Model v) -> Model v -> Model v -> Model v
 with f a b = f [a, b]
 
 -- | Turn a list of list of 'Vector3d's and an int into @polyhedron
