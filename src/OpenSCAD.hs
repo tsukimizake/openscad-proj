@@ -600,7 +600,7 @@ linearExtrude ::
   -- | to extrude
   Model2d ->
   Model3d
-linearExtrude height twist scal slices = LinearExtrude height twist scal slices 3 def
+linearExtrude height twist scal slices = LinearExtrude height twist scal slices 10 def
 
 linearExtrudeDefault :: Double -> Model2d -> Model3d
 linearExtrudeDefault h = linearExtrude h 0 (1, 1) 10
