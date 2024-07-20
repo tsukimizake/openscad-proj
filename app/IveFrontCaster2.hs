@@ -1,54 +1,80 @@
+{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
+
 module IveFrontCaster2 (obj, run) where
 
 import Data.Function ((&))
 import Debug.Trace
 import OpenSCAD as OS
 import Sketch
+import SketchTypes
 import Prelude
 
 run :: IO ()
-run = do
-  obj & render & writeFile "IveFrontCaster2.scad"
+run = obj & render & writeFile "IveFrontCaster2.scad"
+
+mkSocket :: Point -> SketchM Polygon
+mkSocket leftbottom = do
+  -- socket
+  let socketa = leftbottom
+  socketc <- point & relx socketa 13 & rely socketa 35
+  (socketb, socketd) <- rectSketch socketa socketc
+  poly [socketa, socketb, socketc, socketd]
 
 obj :: OpenSCADM Model3d
 obj =
   do
-    let ([frame, bddiag, acdiag, top, bottom, left, right, socket, holder], []) = traceShowId $ sketch do
-          -- frame
-          a <- point & x 0 & y 0
-          c <- point & x 180 & y 50
-          frameBottom <- line & from a & degree 0
-          frameTop <- line & from c & degree 0
-          frameLeft <- line & from a & degree 90
-          frameRight <- line & from c & degree 90
-          b <- intersectionPoint frameBottom frameRight
-          d <- intersectionPoint frameTop frameLeft
-          frame' <- poly [a, b, c, d]
+    let ( (frame, bddiag, acdiag, top, bottom, left, right, socket, holder),
+          (screwLa, screwLb, screwLc, screwLd, screwRa, screwRb, screwRc, screwRd)
+          ) = traceShowId $ sketchTuple do
+            -- frame
+            a <- point & x 0 & y 0
+            c <- point & x 180 & y 50
+            frameBottom <- line & from a & degree 0
+            frameTop <- line & from c & degree 0
+            frameLeft <- line & from a & degree 90
+            frameRight <- line & from c & degree 90
+            b <- intersectionPoint frameBottom frameRight
+            d <- intersectionPoint frameTop frameLeft
+            frame' <- poly [a, b, c, d]
+            ac <- line & between a c
+            bd <- line & between b d
+            center <- intersectionPoint ac bd
 
-          bddiag' <- wideLine 3 b d
-          acdiag' <- wideLine 3 a c
-          top' <- wideLine 3 c d
-          bottom' <- wideLine 3 a b
-          left' <- wideLine 3 a d
-          right' <- wideLine 3 b c
-          ac <- line & between a c
-          bd <- line & between b d
-          center <- intersectionPoint ac bd
+            -- screw holes
+            screwLa' <- point & relx a 6 & rely center (-18)
+            screwLc' <- point & relx screwLa' 15 & rely center 18
+            (screwLb', screwLd') <- rectSketch screwLa' screwLc'
 
-          -- socket
-          socketa <- point & relx center (-6.5) & rely center (-17.5)
-          socketc <- point & relx socketa 13 & rely socketa 35
-          (socketb, socketd) <- rectSketch socketa socketc
-          socket' <- poly [socketa, socketb, socketc, socketd]
+            screwRa' <- point & relx c (-6) & rely center (-18)
+            screwRc' <- point & relx screwRa' (-15) & rely center 18
+            (screwRb', screwRd') <- rectSketch screwRa' screwRc'
 
-          -- holder
-          holdera <- point & relx center (-12.5) & rely center (-24) -- TODO less height
-          holderc <- point & relx holdera 25 & rely holdera 48
-          (holderb, holderd) <- rectSketch holdera holderc
-          holder' <- poly [holdera, holderb, holderc, holderd]
-          pure ([frame', bddiag', acdiag', top', bottom', left', right', socket', holder'], [])
+            -- reinforce frame
+            rea <- point & relx a 0 & rely screwLa' 3
+            rec_ <- point & relx c 0 & rely screwRc' (-3)
+            (reb, red_) <- rectSketch rea rec_
+            bddiag' <- wideLine 2 reb red_
+            acdiag' <- wideLine 2 rea rec_
+            top' <- wideLine 2 c d
+            bottom' <- wideLine 2 a b
+            left' <- wideLine 2 a d
+            right' <- wideLine 2 b c
 
-    let ([sideframe], []) = sketch do
+            -- socket
+            socketa <- point & relx center (-6.5) & rely center (-17.5)
+            socket' <- mkSocket socketa
+
+            -- holder
+            holdera <- point & relx center (-12.5) & rely center (-24) -- TODO less height
+            holderc <- point & relx holdera 25 & rely holdera 48
+            (holderb, holderd) <- rectSketch holdera holderc
+            holder' <- poly [holdera, holderb, holderc, holderd]
+            pure
+              ( (frame', bddiag', acdiag', top', bottom', left', right', socket', holder'),
+                (screwLa', screwLb', screwLc', screwLd', screwRa', screwRb', screwRc', screwRd')
+              )
+
+    let (sideframe, ()) = sketchTuple do
           a <- point & x 0 & y 0
           aup <- point & x 0 & y 5
           b <- point & x 80 & y 20
@@ -56,7 +82,7 @@ obj =
           dup <- point & x 180 & y 5
           d <- point & x 180 & y 0
           sideframe' <- poly [a, aup, b, c, dup, d]
-          pure ([sideframe'], [])
+          pure (sideframe', ())
 
     let reinforceFrame =
           union
@@ -67,14 +93,29 @@ obj =
               left,
               right
             ]
-    frame
-      & linearExtrudeDefault 1 union (reinforceFrame & linearExtrudeDefault 20)
+
+    linearExtrudeDefault 1 frame
       & with union (reinforceFrame & linearExtrudeDefault 20)
       & with intersection (frame & linearExtrudeDefault 100)
       & with intersection (sideframe & linearExtrudeDefault 100 & onYAxis)
       & with union (holder & linearExtrudeDefault 20)
       & flip difference (socket & linearExtrudeDefault 20 & translate (0, 0, 2))
+      & ( `difference`
+            union
+              [ screwHole M5 35 True & translate (expandVector screwLa),
+                screwHole M5 35 True & translate (expandVector screwLb),
+                screwHole M5 35 True & translate (expandVector screwLc),
+                screwHole M5 35 True & translate (expandVector screwLd),
+                screwHole M5 35 True & translate (expandVector screwRa),
+                screwHole M5 35 True & translate (expandVector screwRb),
+                screwHole M5 35 True & translate (expandVector screwRc),
+                screwHole M5 35 True & translate (expandVector screwRd)
+              ]
+        )
       & pure
+
+expandVector :: Vector2d -> Vector3d
+expandVector (x_, y_) = (x_, y_, 0)
 
 -- -- 旧実装
 -- obj :: Model3d

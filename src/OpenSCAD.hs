@@ -209,12 +209,14 @@ module OpenSCAD
 where
 
 import Control.Monad.Freer
+import Control.Monad.Freer.Error (Error, runError)
 import Control.Monad.Freer.State
 import Control.Monad.Freer.Writer
 import qualified Data.Char as Char
 import Data.Colour (AlphaColour, Colour, alphaChannel, darken, over)
 import Data.Colour.Names as Colours
 import Data.Colour.SRGB (channelBlue, channelGreen, channelRed, toSRGB)
+import Data.Function
 import Data.List (elemIndices, nub)
 import Data.Maybe (catMaybes)
 import qualified Data.Set as Set
@@ -222,13 +224,22 @@ import Prettyprinter ((<+>))
 import qualified Prettyprinter as PP
 import Utils (safeHead, safeTail)
 
-type OpenSCADM_ v a = Eff '[State Int, Writer [(String, Model v)]] a
+type OpenSCADM_ v a = Eff '[State Int, Writer [(String, Model v)], Error String] a
 
 type OpenSCADM a = OpenSCADM_ Vector3d a
 
 -- TODO make v existential
 runOpenSCADM :: OpenSCADM a -> (a, [(String, Model3d)])
-runOpenSCADM = run . runWriter . fmap fst . (runState 0)
+runOpenSCADM m =
+  m
+    & runState 0
+    & fmap fst
+    & runWriter
+    & runError
+    & run
+    & \case
+      Prelude.Left e -> error e
+      Prelude.Right x -> x
 
 -- A vector in 2 or 3-space. They are used in transformations of
 -- 'Model's of their type.
@@ -565,7 +576,7 @@ polyhedron convexity paths
           else last maxFirst,
         case (maxFirst, safeTail maxLast) of
           (hd : _, []) -> hd
-          (_, (x : _)) -> x
+          (_, x : _) -> x
           _ -> error "No face contains the maximum point"
       )
     xCross a b c = (\(a', _b', _c') -> a') $ (a #- b) #* (b #- c)
