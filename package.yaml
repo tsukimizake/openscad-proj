@@ -41,6 +41,9 @@ default-extensions:
   - ScopedTypeVariables
   - NamedFieldPuns
   - TypeFamilies
+  - RecordWildCards
+  - DeriveGeneric
+  - TemplateHaskell
 
 library:
   source-dirs: src
@@ -53,6 +56,8 @@ library:
   - colour
   - containers
   - prettyprinter
+  - template-haskell
+  - extensible
 
 executables:
   openscad-proj-exe:

@@ -24,6 +24,7 @@ obj =
           b <- intersectionPoint frameBottom frameRight
           d <- intersectionPoint frameTop frameLeft
           frame' <- poly [a, b, c, d]
+
           bddiag' <- wideLine 3 b d
           acdiag' <- wideLine 3 a c
           top' <- wideLine 3 c d
@@ -66,8 +67,10 @@ obj =
               left,
               right
             ]
-    (frame & linearExtrudeDefault 1)
+    frame
+      & linearExtrudeDefault 1 union (reinforceFrame & linearExtrudeDefault 20)
       & with union (reinforceFrame & linearExtrudeDefault 20)
+      & with intersection (frame & linearExtrudeDefault 100)
       & with intersection (sideframe & linearExtrudeDefault 100 & onYAxis)
       & with union (holder & linearExtrudeDefault 20)
       & flip difference (socket & linearExtrudeDefault 20 & translate (0, 0, 2))

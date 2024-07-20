@@ -50,16 +50,21 @@ library
       ScopedTypeVariables
       NamedFieldPuns
       TypeFamilies
+      RecordWildCards
+      DeriveGeneric
+      TemplateHaskell
       LambdaCase
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints
   build-depends:
       base >=4.7 && <5
     , colour
     , containers
+    , extensible
     , freer-simple
     , lens
     , linear
     , prettyprinter
+    , template-haskell
   default-language: Haskell2010
 
 executable openscad-proj-exe
@@ -99,6 +104,9 @@ executable openscad-proj-exe
       ScopedTypeVariables
       NamedFieldPuns
       TypeFamilies
+      RecordWildCards
+      DeriveGeneric
+      TemplateHaskell
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
@@ -130,6 +138,9 @@ test-suite sketch-test
       ScopedTypeVariables
       NamedFieldPuns
       TypeFamilies
+      RecordWildCards
+      DeriveGeneric
+      TemplateHaskell
   ghc-options: -Wall -Wcompat -Widentities -Wincomplete-record-updates -Wincomplete-uni-patterns -Wmissing-export-lists -Wmissing-home-modules -Wpartial-fields -Wredundant-constraints -threaded -rtsopts -with-rtsopts=-N
   build-depends:
       base >=4.7 && <5
