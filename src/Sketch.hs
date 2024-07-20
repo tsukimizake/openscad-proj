@@ -36,7 +36,6 @@ import Control.Monad.Freer.Writer (runWriter, tell)
 import qualified Data.Bifunctor
 import Data.Function ((&))
 import qualified Data.List as List
-import Debug.Trace
 import OpenSCAD (Model2d, Model3d, Vector2d, errorAssert, mirror, rotate3d)
 import SketchSolver (runSolver)
 import SketchTypes

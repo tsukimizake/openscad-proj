@@ -28,7 +28,7 @@ obj =
           ) = traceShowId $ sketchTuple do
             -- frame
             a <- point & x 0 & y 0
-            c <- point & x 180 & y 50
+            c <- point & x 180 & y 48
             frameBottom <- line & from a & degree 0
             frameTop <- line & from c & degree 0
             frameLeft <- line & from a & degree 90
@@ -65,7 +65,7 @@ obj =
             socket' <- mkSocket socketa
 
             -- holder
-            holdera <- point & relx center (-12.5) & rely center (-24) -- TODO less height
+            holdera <- point & relx center (-12.5) & rely center (-24)
             holderc <- point & relx holdera 25 & rely holdera 48
             (holderb, holderd) <- rectSketch holdera holderc
             holder' <- poly [holdera, holderb, holderc, holderd]
