@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
-module IveFrontCaster2 (obj, run) where
+module IveFrontCaster2 (obj, run, mkSocket, extrudeSocket) where
 
 import Data.Function ((&))
 import Debug.Trace
@@ -13,12 +13,16 @@ run :: IO ()
 run = obj & render & writeFile "IveFrontCaster2.scad"
 
 mkSocket :: Point -> SketchM Polygon
-mkSocket leftbottom = do
+mkSocket leftbottom' = do
   -- socket
-  let socketa = leftbottom
+  let socketa = leftbottom'
   socketc <- point & relx socketa 13 & rely socketa 35
   (socketb, socketd) <- rectSketch socketa socketc
   poly [socketa, socketb, socketc, socketd]
+
+extrudeSocket :: Vector2d -> Model2d -> Model3d
+extrudeSocket origin socket =
+  socket & extrudeWithOrigin origin (linearExtrude 20 0 (1.1, 1.1) 0) & translate (0, 0, 2)
 
 obj :: OpenSCADM Model3d
 obj =
@@ -74,7 +78,7 @@ obj =
                 (screwLa', screwLb', screwLc', screwLd', screwRa', screwRb', screwRc', screwRd')
               )
 
-    let (sideframe, ()) = sketchTuple do
+    let (sideframe, stopperPinHole) = sketchTuple do
           a <- point & x 0 & y 0
           aup <- point & x 0 & y 5
           b <- point & x 80 & y 20
@@ -82,7 +86,8 @@ obj =
           dup <- point & x 180 & y 5
           d <- point & x 180 & y 0
           sideframe' <- poly [a, aup, b, c, dup, d]
-          pure (sideframe', ())
+          stopperPinHole' <- point & relx a 90 & rely c (-10)
+          pure (sideframe', stopperPinHole')
 
     let reinforceFrame =
           union
@@ -99,7 +104,7 @@ obj =
       & with intersection (frame & linearExtrudeDefault 100)
       & with intersection (sideframe & linearExtrudeDefault 100 & onYAxis)
       & with union (holder & linearExtrudeDefault 20)
-      & flip difference (socket & linearExtrudeDefault 20 & translate (0, 0, 2))
+      & flip difference (extrudeSocket (90, 24) socket)
       & ( `difference`
             union
               [ screwHole M5 35 True & translate (expandVector screwLa),
@@ -112,6 +117,7 @@ obj =
                 screwHole M5 35 True & translate (expandVector screwRd)
               ]
         )
+      & (`difference` (cylinder 100 3 def & translate (expandVector stopperPinHole) & onYAxis))
       & pure
 
 expandVector :: Vector2d -> Vector3d

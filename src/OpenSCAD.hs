@@ -5,6 +5,7 @@
 {-# LANGUAGE OverloadedStrings #-}
 {-# LANGUAGE RankNTypes #-}
 {-# LANGUAGE StandaloneDeriving #-}
+{-# OPTIONS_GHC -Wno-orphans #-}
 {-# OPTIONS_GHC -Wno-redundant-constraints #-}
 
 -- |
@@ -159,6 +160,8 @@ module OpenSCAD
     linearExtrudeDefault,
     rotateExtrude,
     surface,
+    withOrigin,
+    extrudeWithOrigin,
 
     -- * Functions
 
@@ -166,6 +169,7 @@ module OpenSCAD
     union,
     intersection,
     difference,
+    diff,
     minkowski,
     hull,
 
@@ -220,6 +224,7 @@ import Data.Function
 import Data.List (elemIndices, nub)
 import Data.Maybe (catMaybes)
 import qualified Data.Set as Set
+import GHC.Records (HasField (getField))
 import Prettyprinter ((<+>))
 import qualified Prettyprinter as PP
 import Utils (safeHead, safeTail)
@@ -246,6 +251,7 @@ runOpenSCADM m =
 class (Eq a) => Vector a where
   rVector :: a -> String
   toList :: a -> [Double]
+  vzero :: a
   (#*) :: a -> a -> a -- cross product
   (#-) :: a -> a -> a -- difference between two vectors
 
@@ -267,9 +273,16 @@ class (Eq a) => Vector a where
 -- @vector@ of length 2.
 type Vector2d = (Double, Double)
 
+instance HasField "x" Vector2d Double where
+  getField = fst
+
+instance HasField "y" Vector2d Double where
+  getField = snd
+
 instance Vector Vector2d where
   rVector (x, y) = "[" ++ show x ++ "," ++ show y ++ "]"
   toList (x, y) = [x, y]
+  vzero = (0, 0)
   (x1, y1) #- (x2, y2) = (x1 - x2, y1 - y2)
   (x1, y1) #* (x2, y2) = (0, x1 * y2 - y1 * x2) -- for purposes of collinear
 
@@ -277,9 +290,19 @@ instance Vector Vector2d where
 -- @vector@ of length 3.
 type Vector3d = (Double, Double, Double)
 
+instance HasField "x" Vector3d Double where
+  getField (x, _, _) = x
+
+instance HasField "y" Vector3d Double where
+  getField (_, y, _) = y
+
+instance HasField "z" Vector3d Double where
+  getField (_, _, z) = z
+
 instance Vector Vector3d where
   rVector (x, y, z) = "[" ++ show x ++ "," ++ show y ++ "," ++ show z ++ "]"
   toList (x, y, z) = [x, y, z]
+  vzero = (0, 0, 0)
   (x1, y1, z1) #- (x2, y2, z2) = (x1 - x2, y1 - y2, z1 - z2)
   (x1, y1, z1) #* (x2, y2, z2) =
     ( y1 * z2 - z1 * y2,
@@ -625,6 +648,12 @@ rotateExtrude = RotateExtrude
 surface :: FilePath -> Bool -> Int -> Model3d
 surface f i c = Solid $ Surface f i c
 
+withOrigin :: (Vector v) => v -> Model v -> (Model v -> Model v) -> Model v
+withOrigin v m f = m & OpenSCAD.translate (vzero #- v) & f & OpenSCAD.translate v
+
+extrudeWithOrigin :: Vector2d -> (Model2d -> Model3d) -> Model2d -> Model3d
+extrudeWithOrigin v@(vx, vy) f m = m & OpenSCAD.translate (vzero #- v) & f & OpenSCAD.translate (vx, vy, 0)
+
 -- And the one polymorphic function we have.
 
 -- | 'importFile' is @import /filename/@.
@@ -687,6 +716,10 @@ intersection = Intersection
 -- | The difference between two 'Model's.
 difference :: (Vector v) => Model v -> Model v -> Model v
 difference = Difference
+
+-- | pipe friendly version of difference
+diff :: (Vector v) => Model v -> Model v -> Model v
+diff = flip difference
 
 -- | The Minkowski sum of a list of 'Model's.
 minkowski :: (Vector v) => [Model v] -> Model v
