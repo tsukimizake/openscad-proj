@@ -13,9 +13,9 @@ run :: IO ()
 run = obj & render & writeFile "IveFrontCaster2.scad"
 
 mkSocket :: Point -> SketchM Polygon
-mkSocket leftbottom' = do
+mkSocket center = do
   -- socket
-  let socketa = leftbottom'
+  socketa <- point & relx center (-6.5) & rely center (-17.5)
   socketc <- point & relx socketa 13 & rely socketa 35
   (socketb, socketd) <- rectSketch socketa socketc
   poly [socketa, socketb, socketc, socketd]
@@ -65,8 +65,7 @@ obj =
             right' <- wideLine 2 b c
 
             -- socket
-            socketa <- point & relx center (-6.5) & rely center (-17.5)
-            socket' <- mkSocket socketa
+            socket' <- mkSocket center
 
             -- holder
             holdera <- point & relx center (-12.5) & rely center (-24)

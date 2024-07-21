@@ -18,7 +18,7 @@ obj :: OpenSCADM Model3d
 obj =
   do
     let innerHeight = 60
-    let ((out, inner, adapterWindow), center) = sketchTuple do
+    let ((outerhull, inner, adapterWindow, socket), center) = sketchTuple do
           -- outer hull
           outa <- point & x 0 & y 0
           outc <- point & x 90 & y 65
@@ -41,15 +41,19 @@ obj =
           (windowb, windowd) <- rectSketch windowa windowc
           window' <- poly [windowa, windowb, windowc, windowd]
 
-          pure ((out', inner', window'), center')
+          -- caster adapter
+          socket' <- mkSocket center'
 
-    let (innerSide, ()) = sketchTuple do
+          pure ((out', inner', window', socket'), center')
+
+    let (innerSide, stopperPinHole) = sketchTuple do
           innera <- point & x 0 & y 0
           innerb <- point & relx innera 4.93 & rely innera 0
           innerc <- point & relx innera 4.43 & rely innera innerHeight
           innerd <- point & relx innera 0 & rely innerc 0
           innerSide' <- poly [innera, innerb, innerc, innerd]
-          pure (innerSide', ())
+          stopperPinHole' <- point & x center.x & y 18
+          pure (innerSide', stopperPinHole')
 
     let (upperLeverWindow, ()) = sketchTuple do
           center' <- point & x center.x & y 2
@@ -59,8 +63,7 @@ obj =
           upperLeverWindow' <- poly [upperLeverWindowa, upperLeverWindowb, upperLeverWindowc, upperLeverWindowd]
           pure (upperLeverWindow', ())
 
-    out
-      & linearExtrudeDefault 8
+    (outerhull & linearExtrudeDefault 8)
       & diff
         ( intersection
             [ inner & linearExtrudeDefault 10,
@@ -70,8 +73,18 @@ obj =
         )
       & diff (upperLeverWindow & linearExtrudeDefault 70 & translate (0, 0, 30) & onYAxis)
       & diff (adapterWindow & linearExtrudeDefault 5)
+      & mappend (socket & extrudeSocket center & mirror (0, 0, 1) & translate (0, 0, 30))
+      & diff (cylinder 100 3 def & translate (expandVector stopperPinHole) & onYAxis)
       & pure
 
+expandVector :: Vector2d -> Vector3d
+expandVector (x_, y_) = (x_, y_, 0)
+
+run :: IO ()
+run =
+  obj & render & writeFile "ivefronteadapter2.scad"
+
+-- 旧実装
 -- adapterInner :: Model3d
 -- adapterInner =
 --   let topL = 0
@@ -158,7 +171,3 @@ obj =
 -- --       & translate (-13, 0, 0)
 -- --   )
 -- --     `difference` (cylinder 46 4 def & translate (-6.5, -10, 0))
---
-run :: IO ()
-run =
-  obj & render & writeFile "ivefronteadapter2.scad"
