@@ -10,6 +10,6 @@ let modname = ls app/
 
 open app/Main.hs
   | lines
-  | each {|| str replace --regex "main = .*" $"main = ($modname).run" }
+  | each {|| str replace --regex ".*\\.run" $"  ($modname).run" }
   | collect {|| save -f app/Main.hs}
 

@@ -27,9 +27,9 @@ extrudeSocket origin socket =
 obj :: OpenSCADM Model3d
 obj =
   do
-    let ( (frame, bddiag, acdiag, top, bottom, left, right, socket, holder),
+    let ( (frame, lb, rb, lt, rt, top, bottom, left, right, socket, holder),
           (screwLa, screwLb, screwLc, screwLd, screwRa, screwRb, screwRc, screwRd)
-          ) = traceShowId $ sketchTuple do
+          ) = sketchTuple do
             -- frame
             a <- point & x 0 & y 0
             c <- point & x 180 & y 48
@@ -54,11 +54,14 @@ obj =
             (screwRb', screwRd') <- rectSketch screwRa' screwRc'
 
             -- reinforce frame
-            rea <- point & relx a 0 & rely screwLa' 3
-            rec_ <- point & relx c 0 & rely screwRc' (-3)
-            (reb, red_) <- rectSketch rea rec_
-            bddiag' <- wideLine 2 reb red_
-            acdiag' <- wideLine 2 rea rec_
+            framel <- point & relx a 0 & rely center 0
+            framer <- point & relx c 0 & rely center 0
+            frameb <- point & relx center 0 & rely a 0
+            framet <- point & relx center 0 & rely c 0
+            lb' <- wideLine 2 framel frameb
+            rb' <- wideLine 2 framer framet
+            lt' <- wideLine 2 framel framet
+            rt' <- wideLine 2 frameb framer
             top' <- wideLine 2 c d
             bottom' <- wideLine 2 a b
             left' <- wideLine 2 a d
@@ -73,7 +76,7 @@ obj =
             (holderb, holderd) <- rectSketch holdera holderc
             holder' <- poly [holdera, holderb, holderc, holderd]
             pure
-              ( (frame', bddiag', acdiag', top', bottom', left', right', socket', holder'),
+              ( (frame', lb', rb', lt', rt', top', bottom', left', right', socket', holder'),
                 (screwLa', screwLb', screwLc', screwLd', screwRa', screwRb', screwRc', screwRd')
               )
 
@@ -90,8 +93,10 @@ obj =
 
     let reinforceFrame =
           union
-            [ bddiag,
-              acdiag,
+            [ lb,
+              rb,
+              lt,
+              rt,
               top,
               bottom,
               left,
