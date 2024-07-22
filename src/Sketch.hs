@@ -27,6 +27,8 @@ module Sketch
     wideLine,
     rectSketch,
     sketchTuple,
+    sketchExtrude,
+    ExtrudeAxis (..),
   )
 where
 
@@ -36,10 +38,11 @@ import Control.Monad.Freer.Writer (runWriter, tell)
 import qualified Data.Bifunctor
 import Data.Function ((&))
 import qualified Data.List as List
-import OpenSCAD (Model2d, Model3d, Vector2d, errorAssert, mirror, rotate3d)
+import OpenSCAD (Model2d, Model3d, Vector2d, errorAssert, linearExtrudeDefault, mirror, rotate3d, translate)
 import SketchSolver (runSolver)
 import SketchTypes
 import Prelude hiding (id)
+import qualified Prelude
 
 --- SOLVER
 
@@ -217,3 +220,16 @@ onYAxis m = m & rotate3d (90, 0, 0) & mirror (0, 1, 0)
 
 onXAxis :: Model3d -> Model3d
 onXAxis m = m & rotate3d (0, -90, 0) & mirror (1, 0, 0)
+
+data ExtrudeAxis = OnXAxis | OnYAxis | OnZAxis
+  deriving (Show, Eq)
+
+sketchExtrude :: Double -> Double -> ExtrudeAxis -> Model2d -> Model3d
+sketchExtrude bottom top axis model =
+  model
+    & OpenSCAD.linearExtrudeDefault (top + bottom)
+    & OpenSCAD.translate (0, 0, bottom)
+    & case axis of
+      OnXAxis -> onXAxis
+      OnYAxis -> onYAxis
+      OnZAxis -> Prelude.id

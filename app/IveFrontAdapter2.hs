@@ -4,6 +4,7 @@ import Data.Function ((&))
 import IveFrontCaster2 (extrudeSocket, mkSocket)
 import OpenSCAD as OS
 import Sketch
+import Sketch (sketchExtrude)
 import SketchTypes
 import Prelude
 
@@ -52,7 +53,7 @@ obj =
           innerc <- point & relx innera 4.43 & rely innera innerHeight
           innerd <- point & relx innera 0 & rely innerc 0
           innerSide' <- poly [innera, innerb, innerc, innerd]
-          stopperPinHole' <- point & x center.x & y 18
+          stopperPinHole' <- point & x center.x & y 19
           pure (innerSide', stopperPinHole')
 
     let (upperLeverWindow, ()) = sketchTuple do
@@ -63,17 +64,16 @@ obj =
           upperLeverWindow' <- poly [upperLeverWindowa, upperLeverWindowb, upperLeverWindowc, upperLeverWindowd]
           pure (upperLeverWindow', ())
 
-    (outerhull & linearExtrudeDefault 8)
+    (outerhull & sketchExtrude 0 9 OnZAxis)
       & diff
         ( intersection
-            [ inner & linearExtrudeDefault 10,
-              innerSide & linearExtrudeDefault 100 & onXAxis
+            [ inner & sketchExtrude 2 12 OnZAxis,
+              innerSide & sketchExtrude 2 100 OnXAxis
             ]
-            & translate (0, 0, 2)
         )
-      & diff (upperLeverWindow & linearExtrudeDefault 70 & translate (0, 0, 30) & onYAxis)
-      & diff (adapterWindow & linearExtrudeDefault 5)
-      & mappend (socket & extrudeSocket center & mirror (0, 0, 1) & translate (0, 0, 30))
+      & diff (upperLeverWindow & sketchExtrude 30 100 OnYAxis)
+      & diff (adapterWindow & sketchExtrude 0 5 OnZAxis)
+      & mappend (socket & extrudeSocket center & mirror (0, 0, 1) & translate (0, 0, 31))
       & diff (cylinder 100 3 def & translate (expandVector stopperPinHole) & onYAxis)
       & pure
 
