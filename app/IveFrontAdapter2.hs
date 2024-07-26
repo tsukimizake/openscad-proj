@@ -4,8 +4,6 @@ import Data.Function ((&))
 import IveFrontCaster2 (extrudeSocket, mkSocket)
 import OpenSCAD as OS
 import Sketch
-import Sketch (sketchExtrude)
-import SketchTypes
 import Prelude
 
 -- botLR = 85.2
@@ -19,10 +17,10 @@ obj :: OpenSCADM Model3d
 obj =
   do
     let innerHeight = 60
-    let ((outerhull, inner, adapterWindow, socket), center) = sketchTuple do
+    let ((outerhull, inner, adapterWindow, socket, stopperHook), center) = sketchTuple do
           -- outer hull
           outa <- point & x 0 & y 0
-          outc <- point & x 90 & y 65
+          outc <- point & x 100 & y 65
           (outb, outd) <- rectSketch outa outc
           out' <- poly [outa, outb, outc, outd]
           ac <- line & between outa outc
@@ -45,7 +43,13 @@ obj =
           -- caster adapter
           socket' <- mkSocket center'
 
-          pure ((out', inner', window', socket'), center')
+          -- stopper hook
+          stopperc <- point & relx center' 11 & rely innerc (-9)
+          stoppera <- point & relx center' (-11) & rely stopperc (-7)
+          (stopperb, stopperd) <- rectSketch stoppera stopperc
+          stopperHook' <- poly [stoppera, stopperb, stopperc, stopperd]
+
+          pure ((out', inner', window', socket', stopperHook'), center')
 
     let (innerSide, stopperPinHole) = sketchTuple do
           innera <- point & x 0 & y 0
@@ -53,11 +57,11 @@ obj =
           innerc <- point & relx innera 4.43 & rely innera innerHeight
           innerd <- point & relx innera 0 & rely innerc 0
           innerSide' <- poly [innera, innerb, innerc, innerd]
-          stopperPinHole' <- point & x center.x & y 19
+          stopperPinHole' <- point & x center.x & y 20
           pure (innerSide', stopperPinHole')
 
     let (upperLeverWindow, ()) = sketchTuple do
-          center' <- point & x center.x & y 2
+          center' <- point & x center.x & y 0
           upperLeverWindowa <- point & relx center' (-11) & rely center' (-3)
           upperLeverWindowc <- point & relx upperLeverWindowa 22 & rely upperLeverWindowa 6
           (upperLeverWindowb, upperLeverWindowd) <- rectSketch upperLeverWindowa upperLeverWindowc
@@ -65,16 +69,20 @@ obj =
           pure (upperLeverWindow', ())
 
     (outerhull & sketchExtrude 0 9 OnZAxis)
+      & diff (upperLeverWindow & sketchExtrude 30 100 OnYAxis)
+      & diff (adapterWindow & sketchExtrude 0 4 OnZAxis)
       & diff
         ( intersection
             [ inner & sketchExtrude 2 12 OnZAxis,
               innerSide & sketchExtrude 2 100 OnXAxis
             ]
         )
-      & diff (upperLeverWindow & sketchExtrude 30 100 OnYAxis)
-      & diff (adapterWindow & sketchExtrude 0 5 OnZAxis)
-      & mappend (socket & extrudeSocket center & mirror (0, 0, 1) & translate (0, 0, 31))
-      & diff (cylinder 100 3 def & translate (expandVector stopperPinHole) & onYAxis)
+      & diff (stopperHook & sketchExtrude 0 7 OnZAxis)
+      & mappend (socket & extrudeSocket center & mirror (0, 0, 1) & translate (0, 0, 31) & withOrigin (expandVector center) (scale (0.95, 0.95, 1)))
+      & diff
+        ( (cylinder 100 3 def & translate (expandVector stopperPinHole) & onYAxis)
+            & with hull (cylinder 100 3 def & translate (expandVector (stopperPinHole.x, stopperPinHole.y + 1)) & onYAxis)
+        )
       & pure
 
 expandVector :: Vector2d -> Vector3d

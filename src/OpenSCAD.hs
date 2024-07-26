@@ -648,8 +648,8 @@ rotateExtrude = RotateExtrude
 surface :: FilePath -> Bool -> Int -> Model3d
 surface f i c = Solid $ Surface f i c
 
-withOrigin :: (Vector v) => v -> Model v -> (Model v -> Model v) -> Model v
-withOrigin v m f = m & OpenSCAD.translate (vzero #- v) & f & OpenSCAD.translate v
+withOrigin :: (Vector v) => v -> (Model v -> Model v) -> Model v -> Model v
+withOrigin v f m = m & OpenSCAD.translate (vzero #- v) & f & OpenSCAD.translate v
 
 extrudeWithOrigin :: Vector2d -> (Model2d -> Model3d) -> Model2d -> Model3d
 extrudeWithOrigin v@(vx, vy) f m = m & OpenSCAD.translate (vzero #- v) & f & OpenSCAD.translate (vx, vy, 0)

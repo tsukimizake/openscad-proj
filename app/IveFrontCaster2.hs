@@ -3,7 +3,6 @@
 module IveFrontCaster2 (obj, run, mkSocket, extrudeSocket) where
 
 import Data.Function ((&))
-import Debug.Trace
 import OpenSCAD as OS
 import Sketch
 import SketchTypes
@@ -27,7 +26,7 @@ extrudeSocket origin socket =
 obj :: OpenSCADM Model3d
 obj =
   do
-    let ( (frame, lb, rb, lt, rt, top, bottom, left, right, socket, holder),
+    let ( (frame, lb, rb, lt, rt, top, bottom, left, right, socket, holder, centerHole),
           (screwLa, screwLb, screwLc, screwLd, screwRa, screwRb, screwRc, screwRd)
           ) = sketchTuple do
             -- frame
@@ -75,12 +74,18 @@ obj =
             holderc <- point & relx holdera 25 & rely holdera 48
             (holderb, holderd) <- rectSketch holdera holderc
             holder' <- poly [holdera, holderb, holderc, holderd]
+
+            -- center hole
+            centerHolea <- point & relx center (-6.5) & rely center (-6.5)
+            centerHolec <- point & relx center 6.5 & rely center 6.5
+            (centerHoleb, centerHoled) <- rectSketch centerHolea centerHolec
+            centerHole' <- poly [centerHolea, centerHoleb, centerHolec, centerHoled]
             pure
-              ( (frame', lb', rb', lt', rt', top', bottom', left', right', socket', holder'),
+              ( (frame', lb', rb', lt', rt', top', bottom', left', right', socket', holder', centerHole'),
                 (screwLa', screwLb', screwLc', screwLd', screwRa', screwRb', screwRc', screwRd')
               )
 
-    let (sideframe, stopperPinHole) = sketchTuple do
+    let (sideframe, ()) = sketchTuple do
           a <- point & x 0 & y 0
           aup <- point & x 0 & y 5
           b <- point & x 80 & y 20
@@ -88,40 +93,29 @@ obj =
           dup <- point & x 180 & y 5
           d <- point & x 180 & y 0
           sideframe' <- poly [a, aup, b, c, dup, d]
-          stopperPinHole' <- point & relx a 90 & rely c (-10)
-          pure (sideframe', stopperPinHole')
+          pure (sideframe', ())
 
-    let reinforceFrame =
-          union
-            [ lb,
-              rb,
-              lt,
-              rt,
-              top,
-              bottom,
-              left,
-              right
-            ]
+    let reinforceFrame = union [lb, rb, lt, rt, top, bottom, left, right]
 
-    linearExtrudeDefault 1 frame
+    linearExtrudeDefault 2 frame
       & with union (reinforceFrame & linearExtrudeDefault 20)
       & with intersection (frame & linearExtrudeDefault 100)
       & with intersection (sideframe & linearExtrudeDefault 100 & onYAxis)
       & with union (holder & linearExtrudeDefault 20)
       & flip difference (extrudeSocket (90, 24) socket)
-      & ( `difference`
-            union
-              [ screwHole M5 35 True & translate (expandVector screwLa),
-                screwHole M5 35 True & translate (expandVector screwLb),
-                screwHole M5 35 True & translate (expandVector screwLc),
-                screwHole M5 35 True & translate (expandVector screwLd),
-                screwHole M5 35 True & translate (expandVector screwRa),
-                screwHole M5 35 True & translate (expandVector screwRb),
-                screwHole M5 35 True & translate (expandVector screwRc),
-                screwHole M5 35 True & translate (expandVector screwRd)
-              ]
+      & diff
+        ( union
+            [ screwHole M5 35 True & translate (expandVector screwLa),
+              screwHole M5 35 True & translate (expandVector screwLb),
+              screwHole M5 35 True & translate (expandVector screwLc),
+              screwHole M5 35 True & translate (expandVector screwLd),
+              screwHole M5 35 True & translate (expandVector screwRa),
+              screwHole M5 35 True & translate (expandVector screwRb),
+              screwHole M5 35 True & translate (expandVector screwRc),
+              screwHole M5 35 True & translate (expandVector screwRd)
+            ]
         )
-      & (`difference` (cylinder 100 3 def & translate (expandVector stopperPinHole) & onYAxis))
+      & diff (centerHole & sketchExtrude (-1) 30 OnZAxis)
       & pure
 
 expandVector :: Vector2d -> Vector3d
