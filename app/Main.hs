@@ -16,4 +16,4 @@ import Washer
 
 main :: IO ()
 main =
-  IveFrontCaster2.run
+  IveFrontAdapter2.run

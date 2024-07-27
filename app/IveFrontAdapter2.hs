@@ -1,7 +1,6 @@
 module IveFrontAdapter2 (obj, run) where
 
 import Data.Function ((&))
-import IveFrontCaster2 (mkSocketX, mkSocketY)
 import OpenSCAD as OS
 import Sketch
 import Prelude
@@ -51,22 +50,33 @@ obj =
           pure ((out', inner', window', stopperHook'), center')
 
     -- X
-    let (innerSide, ()) = sketchTuple do
+    let ((innerSide, socketx), ()) = sketchTuple do
           innera <- point & x 0 & y 0
           innerb <- point & relx innera 4.93 & rely innera 0
           innerc <- point & relx innera 4.43 & rely innera innerHeight
           innerd <- point & relx innera 0 & rely innerc 0
           innerSide' <- poly [innera, innerb, innerc, innerd]
-          pure (innerSide', ())
+          center' <- point & x 0 & y (innerHeight / 2)
+          socketa <- point & relx center' 9 & rely center' (-18)
+          socketb <- point & relx socketa 20 & rely socketa 1
+          socketc <- point & relx socketa 20 & rely center' 18
+          socketd <- point & relx socketa 0 & rely socketc 1
+          socket <- poly [socketa, socketb, socketc, socketd]
+          pure ((innerSide', socket), ())
 
     -- Y
-    let (upperLeverWindow, ()) = sketchTuple do
+    let ((upperLeverWindow, sockety), ()) = sketchTuple do
           center' <- point & x center.x & y 0
           upperLeverWindowa <- point & relx center' (-11) & rely center' (-3)
           upperLeverWindowc <- point & relx upperLeverWindowa 22 & rely upperLeverWindowa 6
           (upperLeverWindowb, upperLeverWindowd) <- rectSketch upperLeverWindowa upperLeverWindowc
           upperLeverWindow' <- poly [upperLeverWindowa, upperLeverWindowb, upperLeverWindowc, upperLeverWindowd]
-          pure (upperLeverWindow', ())
+          socketa <- point & relx center' (-7) & rely center' 9
+          socketb <- point & relx center' 7 & rely socketa 0
+          socketc <- point & relx center' 6 & rely socketb 20
+          socketd <- point & relx center' (-6) & rely socketc 0
+          socket' <- poly [socketa, socketb, socketc, socketd]
+          pure ((upperLeverWindow', socket'), ())
 
     (outerhull & sketchExtrude 0 9 OnZAxis)
       & diff (upperLeverWindow & sketchExtrude 30 100 OnYAxis)
@@ -77,11 +87,14 @@ obj =
               innerSide & sketchExtrude 2 100 OnXAxis
             ]
         )
+      & mappend
+        ( intersection
+            [ sockety & sketchExtrude 0 100 OnYAxis,
+              socketx & sketchExtrude 0 200 OnXAxis
+            ]
+        )
       & diff (stopperHook & sketchExtrude 0 7 OnZAxis)
       & pure
-
-expandVector :: Vector2d -> Vector3d
-expandVector (x_, y_) = (x_, y_, 0)
 
 run :: IO ()
 run =

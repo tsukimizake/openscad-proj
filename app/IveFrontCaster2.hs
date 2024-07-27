@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
-module IveFrontCaster2 (obj, run, mkSocketY, mkSocketX) where
+module IveFrontCaster2 (obj, run) where
 
 import Data.Function ((&))
 import OpenSCAD as OS
