@@ -1,7 +1,7 @@
 module IveFrontAdapter2 (obj, run) where
 
 import Data.Function ((&))
-import IveFrontCaster2 (extrudeSocket, mkSocket)
+import IveFrontCaster2 (mkSocketX, mkSocketY)
 import OpenSCAD as OS
 import Sketch
 import Prelude
@@ -17,7 +17,9 @@ obj :: OpenSCADM Model3d
 obj =
   do
     let innerHeight = 60
-    let ((outerhull, inner, adapterWindow, socket, stopperHook), center) = sketchTuple do
+
+    -- Z
+    let ((outerhull, inner, adapterWindow, stopperHook), center) = sketchTuple do
           -- outer hull
           outa <- point & x 0 & y 0
           outc <- point & x 100 & y 65
@@ -40,26 +42,24 @@ obj =
           (windowb, windowd) <- rectSketch windowa windowc
           window' <- poly [windowa, windowb, windowc, windowd]
 
-          -- caster adapter
-          socket' <- mkSocket center'
-
           -- stopper hook
           stopperc <- point & relx center' 11 & rely innerc (-9)
           stoppera <- point & relx center' (-11) & rely stopperc (-7)
           (stopperb, stopperd) <- rectSketch stoppera stopperc
           stopperHook' <- poly [stoppera, stopperb, stopperc, stopperd]
 
-          pure ((out', inner', window', socket', stopperHook'), center')
+          pure ((out', inner', window', stopperHook'), center')
 
-    let (innerSide, stopperPinHole) = sketchTuple do
+    -- X
+    let (innerSide, ()) = sketchTuple do
           innera <- point & x 0 & y 0
           innerb <- point & relx innera 4.93 & rely innera 0
           innerc <- point & relx innera 4.43 & rely innera innerHeight
           innerd <- point & relx innera 0 & rely innerc 0
           innerSide' <- poly [innera, innerb, innerc, innerd]
-          stopperPinHole' <- point & x center.x & y 20
-          pure (innerSide', stopperPinHole')
+          pure (innerSide', ())
 
+    -- Y
     let (upperLeverWindow, ()) = sketchTuple do
           center' <- point & x center.x & y 0
           upperLeverWindowa <- point & relx center' (-11) & rely center' (-3)
@@ -78,11 +78,6 @@ obj =
             ]
         )
       & diff (stopperHook & sketchExtrude 0 7 OnZAxis)
-      & mappend (socket & extrudeSocket center & mirror (0, 0, 1) & translate (0, 0, 31) & withOrigin (expandVector center) (scale (0.95, 0.95, 1)))
-      & diff
-        ( (cylinder 100 3 def & translate (expandVector stopperPinHole) & onYAxis)
-            & with hull (cylinder 100 3 def & translate (expandVector (stopperPinHole.x, stopperPinHole.y + 1)) & onYAxis)
-        )
       & pure
 
 expandVector :: Vector2d -> Vector3d

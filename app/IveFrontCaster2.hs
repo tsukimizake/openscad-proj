@@ -1,6 +1,6 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
-module IveFrontCaster2 (obj, run, mkSocket, extrudeSocket) where
+module IveFrontCaster2 (obj, run, mkSocketY, mkSocketX) where
 
 import Data.Function ((&))
 import OpenSCAD as OS
@@ -11,22 +11,26 @@ import Prelude
 run :: IO ()
 run = obj & render & writeFile "IveFrontCaster2.scad"
 
-mkSocket :: Point -> SketchM Polygon
-mkSocket center = do
-  -- socket
-  socketa <- point & relx center (-6.5) & rely center (-17.5)
-  socketc <- point & relx socketa 13 & rely socketa 35
-  (socketb, socketd) <- rectSketch socketa socketc
+mkSocketY :: Point -> SketchM Polygon
+mkSocketY center = do
+  socketa <- point & relx center (-6.5) & rely center 0
+  socketb <- point & relx center 6.5 & rely socketa 0
+  socketc <- point & relx center 7.5 & rely socketb 20
+  socketd <- point & relx center (-7.5) & rely socketc 0
   poly [socketa, socketb, socketc, socketd]
 
-extrudeSocket :: Vector2d -> Model2d -> Model3d
-extrudeSocket origin socket =
-  socket & extrudeWithOrigin origin (linearExtrude 20 0 (1.1, 1.1) 0) & translate (0, 0, 2)
+mkSocketX :: Point -> SketchM Polygon
+mkSocketX center = do
+  socketa <- point & relx center (-21) & rely center (-17.5)
+  socketb <- point & relx center 10 & rely socketa (-1)
+  socketc <- point & relx center 10 & rely center 17.5
+  socketd <- point & relx center (-21) & rely socketc (-1)
+  poly [socketa, socketb, socketc, socketd]
 
 obj :: OpenSCADM Model3d
 obj =
   do
-    let ( (frame, lb, rb, lt, rt, top, bottom, left, right, socket, holder, centerHole),
+    let ( (frame, lb, rb, lt, rt, top, bottom, left, right, holder, centerHole),
           (screwLa, screwLb, screwLc, screwLd, screwRa, screwRb, screwRc, screwRd)
           ) = sketchTuple do
             -- frame
@@ -66,9 +70,6 @@ obj =
             left' <- wideLine 2 a d
             right' <- wideLine 2 b c
 
-            -- socket
-            socket' <- mkSocket center
-
             -- holder
             holdera <- point & relx center (-12.5) & rely center (-24)
             holderc <- point & relx holdera 25 & rely holdera 48
@@ -81,11 +82,11 @@ obj =
             (centerHoleb, centerHoled) <- rectSketch centerHolea centerHolec
             centerHole' <- poly [centerHolea, centerHoleb, centerHolec, centerHoled]
             pure
-              ( (frame', lb', rb', lt', rt', top', bottom', left', right', socket', holder', centerHole'),
+              ( (frame', lb', rb', lt', rt', top', bottom', left', right', holder', centerHole'),
                 (screwLa', screwLb', screwLc', screwLd', screwRa', screwRb', screwRc', screwRd')
               )
 
-    let (sideframe, ()) = sketchTuple do
+    let ((sideframe, sockety), ()) = sketchTuple do
           a <- point & x 0 & y 0
           aup <- point & x 0 & y 5
           b <- point & x 80 & y 20
@@ -93,8 +94,16 @@ obj =
           dup <- point & x 180 & y 5
           d <- point & x 180 & y 0
           sideframe' <- poly [a, aup, b, c, dup, d]
-          pure (sideframe', ())
 
+          -- socket
+          center <- point & x 90 & y 5
+          socket' <- mkSocketY center
+          pure ((sideframe', socket'), ())
+
+    let (socketx, ()) = sketchTuple do
+          center <- point & x 24 & y 24
+          socket' <- mkSocketX center
+          pure (socket', ())
     let reinforceFrame = union [lb, rb, lt, rt, top, bottom, left, right]
 
     linearExtrudeDefault 2 frame
@@ -102,7 +111,12 @@ obj =
       & with intersection (frame & linearExtrudeDefault 100)
       & with intersection (sideframe & linearExtrudeDefault 100 & onYAxis)
       & with union (holder & linearExtrudeDefault 20)
-      & flip difference (extrudeSocket (90, 24) socket)
+      & diff
+        ( intersection
+            [ sockety & sketchExtrude 0 100 OnYAxis,
+              socketx & sketchExtrude 0 200 OnXAxis
+            ]
+        )
       & diff
         ( union
             [ screwHole M5 35 True & translate (expandVector screwLa),
