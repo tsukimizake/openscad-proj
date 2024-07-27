@@ -61,10 +61,10 @@ obj =
             framer <- point & relx c 0 & rely center 0
             frameb <- point & relx center 0 & rely a 0
             framet <- point & relx center 0 & rely c 0
-            lb' <- wideLine 2 framel frameb
-            rb' <- wideLine 2 framer framet
-            lt' <- wideLine 2 framel framet
-            rt' <- wideLine 2 frameb framer
+            lb' <- wideLine 1.5 framel frameb
+            rb' <- wideLine 1.5 framer framet
+            lt' <- wideLine 1.5 framel framet
+            rt' <- wideLine 1.5 frameb framer
             top' <- wideLine 2 c d
             bottom' <- wideLine 2 a b
             left' <- wideLine 2 a d
