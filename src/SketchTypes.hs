@@ -87,20 +87,6 @@ data Result
   | PointRes Vector2d
   deriving (Show)
 
-resultToResult :: Result -> Result
-resultToResult = \case
-  ModelRes m -> ModelRes m
-  PointRes p -> PointRes p
-
-modelAndVecToResult :: ([Model2d], [Vector2d]) -> [Result]
-modelAndVecToResult (models, vecs) = fmap ModelRes models <> fmap PointRes vecs
-
-resutlToModelAndVec :: [Result] -> ([Model2d], [Vector2d])
-resutlToModelAndVec = foldr f ([], [])
-  where
-    f (ModelRes m) (ms, ps) = (m : ms, ps)
-    f (PointRes p) (ms, ps) = (ms, p : ps)
-
 unwrapModelRes :: Result -> Model2d
 unwrapModelRes = \case
   ModelRes m -> m
@@ -111,7 +97,7 @@ unwrapPointRes = \case
   PointRes m -> m
   _ -> error "unwrapPointRes"
 
-class ModelsTH a where
+class Models a where
   type Res a :: Type
-  toListTH :: a -> ([Sketch], Proxy a)
-  fromListTH :: ([Result], Proxy a) -> Res a
+  toList :: a -> ([Sketch], Proxy a)
+  fromList :: ([Result], Proxy a) -> Res a

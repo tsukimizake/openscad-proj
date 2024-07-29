@@ -64,7 +64,7 @@ generateToList (Record origname fields) = do
   let recname = mkName "a"
   pure $
     FunD
-      (mkName "toListTH")
+      (mkName "toList")
       [ Clause
           [VarP recname]
           ( NormalB $
@@ -90,7 +90,7 @@ generateFromList :: SketchRecord -> Q Dec
 generateFromList (Record origname fields) = do
   pure $
     FunD
-      (mkName "fromListTH")
+      (mkName "fromList")
       [ Clause
           [TupP [ListP (fields & fmap (\case SkPolygon n -> VarP n; SkPoint n -> VarP n)), VarP $ mkName "_proxy"]]
           ( NormalB $
@@ -121,13 +121,13 @@ generateFromList (Record origname fields) = do
 --                fuwa :: OpenSCAD.Vector2d,
 --                poyo :: OpenSCAD.Model2d}
 --                  deriving (Show)
--- instance SketchTypes.ModelsTH SketchTry.Hoge
+-- instance SketchTypes.Models SketchTry.Hoge
 --     where {type Res SketchTry.Hoge = HogeRes;
---            toListTH a = ([SketchTypes.wrapShape a.honi,
+--            toList a = ([SketchTypes.wrapShape a.honi,
 --                           SketchTypes.wrapShape a.fuwa,
 --                           SketchTypes.wrapShape a.poyo],
 --                          Data.Proxy.Proxy @SketchTry.Hoge);
---            fromListTH ([honi, fuwa, poyo],
+--            fromList ([honi, fuwa, poyo],
 --                        _proxy) = HogeRes{honi = SketchTypes.unwrapModelRes honi,
 --                                          fuwa = SketchTypes.unwrapPointRes fuwa,
 --                                          poyo = SketchTypes.unwrapModelRes poyo}}
@@ -137,17 +137,17 @@ mkSketchRes recordname =
   do
     record <- readRecord recordname
     resRecordDecl <- mkResRecord record
-    toListTH' <- generateToList record
-    fromListTH' <- generateFromList record
+    toList' <- generateToList record
+    fromList' <- generateFromList record
     let res =
           [ resRecordDecl,
             InstanceD
               Nothing
               []
-              (AppT (ConT ''ModelsTH) (ConT recordname))
+              (AppT (ConT ''Models) (ConT recordname))
               [ TySynInstD $ TySynEqn Nothing (AppT (ConT $ toBaseName ''Res) (ConT recordname)) (ConT $ mkResRecordName recordname),
-                toListTH',
-                fromListTH'
+                toList',
+                fromList'
               ]
           ]
     runIO $ putStrLn $ pprint res

@@ -45,17 +45,17 @@ import qualified Prelude
 
 --- SOLVER
 
-sketchRecord :: (ModelsTH m) => SketchM m -> Res m
+sketchRecord :: (Models m) => SketchM m -> Res m
 sketchRecord m =
   m
-    & fmap toListTH
+    & fmap toList
     & runState 0
     & fmap fst
     & runWriter
     & run
     & ( \((sks, proxy), cs) ->
           runSolver' (sks, cs)
-            & either (const (error "should not happen")) (fromListTH . (,proxy))
+            & either (const (error "should not happen")) (fromList . (,proxy))
       )
 
 sketchImpl :: SketchM ([Polygon], [Point]) -> ([Model2d], [Vector2d])
