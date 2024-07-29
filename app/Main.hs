@@ -17,4 +17,4 @@ import Washer
 
 main :: IO ()
 main =
-  SketchTry.run
+  IveFrontAdapter2.run

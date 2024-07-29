@@ -5,7 +5,6 @@ module SketchTH where
 import Data.Function ((&))
 import Data.Proxy
 import Language.Haskell.TH
-import Language.Haskell.TH.Ppr
 import OpenSCAD
 import SketchTypes
 
@@ -150,7 +149,7 @@ mkSketchRes recordname =
                 fromList'
               ]
           ]
-    runIO $ putStrLn $ pprint res
+    -- runIO $ putStrLn $ pprint res
     pure res
 
 -- helpers

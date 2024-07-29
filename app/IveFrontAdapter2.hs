@@ -27,6 +27,7 @@ mkSketchRes ''ZRecord
 data XRecord = XRecord
   { innerSide :: Polygon,
     adapterx :: Polygon,
+    adapterneckx :: Polygon,
     hookx :: Polygon
   }
 
@@ -35,6 +36,7 @@ mkSketchRes ''XRecord
 data YRecord = YRecord
   { upperLeverWindow :: Polygon,
     adaptery :: Polygon,
+    adapterneck :: Polygon,
     hook :: Polygon,
     divider :: Polygon,
     enfol :: Polygon,
@@ -96,6 +98,10 @@ obj =
           adapterhead <- intersectionPoint adapterab adaptercd
           adapterx <- poly [adaptera, adapterhead, adapterd]
 
+          -- adapter neck
+          (necka, neckb, neckc, neckd) <- rectSketch (point & relx center' 0 & rely center' (-6.3)) (\a -> point & relx a 100 & rely a 12.6)
+          adapterneckx <- poly [necka, neckb, neckc, neckd]
+
           -- hook for casterside adapter
           hooka <- point & relx center' 0 & rely center' (-6.3)
           hookb <- point & relx hooka 100 & rely hooka 0
@@ -114,18 +120,25 @@ obj =
               (\a -> point & relx a 22 & rely a 6)
           upperLeverWindow <- poly [upperLeverWindowa, upperLeverWindowb, upperLeverWindowc, upperLeverWindowd]
 
-          -- adapter to caster side
+          -- adapter stem to caster side
           adaptera <- point & relx center' (-7) & rely center' outerThickness
           adapterb <- point & relx center' 7 & rely adaptera 0
-          adapterc <- point & relx center' 6.5 & rely adapterb 20
+          adapterc <- point & relx center' 6.5 & rely adapterb 15
           adapterd <- point & relx center' (-6.5) & rely adapterc 0
           adaptery <- poly [adaptera, adapterb, adapterc, adapterd]
 
+          -- adapter neck
+          adapterad <- line & between adaptera adapterd
+          adapterbc <- line & between adapterb adapterc
+          adapterneckc <- point >>= onLine adapterbc & rely adapterc 5
+          adapterneckd <- point >>= onLine adapterad & rely adapterd 5
+          adapterneck <- poly [adapterd, adapterc, adapterneckc, adapterneckd]
+
           -- hook on the adapter
-          chook <- point & relx adapterc 0.8 & rely adapterc 0 & chamfer 0.4
-          chead <- point & relx adapterc 0 & rely adapterc 7 & chamfer 0.3
-          dhead <- point & relx adapterd 0 & rely adapterd 7 & chamfer 0.3
-          dhook <- point & relx adapterd (-0.8) & rely adapterd 0 & chamfer 0.4
+          chook <- point & relx adapterneckc 0.8 & rely adapterneckc 0 & chamfer 0.4
+          chead <- point & relx adapterneckc 0 & rely adapterneckc 7 & chamfer 0.3
+          dhead <- point & relx adapterneckd 0 & rely adapterneckd 7 & chamfer 0.3
+          dhook <- point & relx adapterneckd (-0.8) & rely adapterneckd 0 & chamfer 0.4
           hook <- poly [chook, chead, dhead, dhook]
 
           -- adapter divider
@@ -164,6 +177,12 @@ obj =
         ( intersection
             [ yrec.adaptery & sketchExtrude 0 100 OnYAxis,
               xrec.adapterx & sketchExtrude 0 200 OnXAxis
+            ]
+        )
+      & mappend
+        ( intersection
+            [ yrec.adapterneck & sketchExtrude 0 100 OnYAxis,
+              xrec.adapterneckx & sketchExtrude 0 200 OnXAxis
             ]
         )
       & mappend
