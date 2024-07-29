@@ -85,13 +85,11 @@ obj =
           center <- intersectionPoint ac bd
 
           -- screw holes
-          screwLa <- point & relx a 6 & rely center (-18)
-          screwLc <- point & relx screwLa 15 & rely center 18
-          (screwLb, screwLd) <- rectSketch screwLa screwLc
+          (screwLa, screwLb, screwLc, screwLd) <-
+            rectSketch (point & relx a 6 & rely center (-18)) (\la -> point & relx la 15 & rely center 18)
 
-          screwRa <- point & relx c (-6) & rely center (-18)
-          screwRc <- point & relx screwRa (-15) & rely center 18
-          (screwRb, screwRd) <- rectSketch screwRa screwRc
+          (screwRa, screwRb, screwRc, screwRd) <-
+            rectSketch (point & relx c (-6) & rely center (-18)) (\ra -> point & relx ra (-15) & rely center 18)
 
           -- reinforce frame
           framel <- point & relx a 0 & rely center 0
@@ -108,15 +106,17 @@ obj =
           right <- wideLine 2 b c
 
           -- holder
-          holdera <- point & relx center (-12.5) & rely center (-24)
-          holderc <- point & relx holdera 25 & rely holdera 48
-          (holderb, holderd) <- rectSketch holdera holderc
+          (holdera, holderb, holderc, holderd) <-
+            rectSketch
+              (point & relx center (-12.5) & rely center (-24))
+              (\holdera -> point & relx holdera 25 & rely holdera 48)
           holder <- poly [holdera, holderb, holderc, holderd]
 
           -- center hole
-          centerHolea <- point & relx center (-6.5) & rely center (-6.5)
-          centerHolec <- point & relx center 6.5 & rely center 6.5
-          (centerHoleb, centerHoled) <- rectSketch centerHolea centerHolec
+          (centerHolea, centerHoleb, centerHolec, centerHoled) <-
+            rectSketch
+              (point & relx center (-6.5) & rely center (-6.5))
+              (\_ -> point & relx center 6.5 & rely center 6.5)
           centerHole <- poly [centerHolea, centerHoleb, centerHolec, centerHoled]
           pure Z {..}
 

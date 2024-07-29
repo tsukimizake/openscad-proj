@@ -175,15 +175,13 @@ wideLine width f t = do
 
 -- RECT
 
-rectSketch :: Point -> Point -> SketchM (Point, Point)
-rectSketch bottomLeft topRight = do
-  bottom <- line & from bottomLeft & degree 0
-  top <- line & from topRight & degree 0
-  left <- line & from bottomLeft & degree 90
-  right <- line & from topRight & degree 90
-  b <- intersectionPoint bottom right
-  d <- intersectionPoint top left
-  pure (b, d)
+rectSketch :: SketchM Point -> (Point -> SketchM Point) -> SketchM (Point, Point, Point, Point)
+rectSketch am cm = do
+  a <- am
+  c <- cm a
+  b <- point & relx c 0 & rely a 0
+  d <- point & relx a 0 & rely c 0
+  pure (a, b, c, d)
 
 --- POLYGON
 poly :: [Point] -> SketchM Polygon

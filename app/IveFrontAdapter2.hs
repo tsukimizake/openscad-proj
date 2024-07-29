@@ -52,9 +52,7 @@ obj =
     -- Z
     let zrec = sketchRecord do
           -- outer hull
-          outa <- point & x 0 & y 0
-          outc <- point & x 100 & y 65
-          (outb, outd) <- rectSketch outa outc
+          (outa, outb, outc, outd) <- rectSketch (point & x 0 & y 0) (\_ -> point & x 100 & y 65)
           outerhull <- poly [outa, outb, outc, outd]
           ac <- line & between outa outc
           bd <- line & between outb outd
@@ -68,15 +66,13 @@ obj =
           inner <- poly [innera, innerb, innerc, innerd]
 
           -- adapter window
-          windowa <- point & relx center (-30.5) & y 0
-          windowc <- point & relx windowa 61 & rely innerc 0
-          (windowb, windowd) <- rectSketch windowa windowc
+          (windowa, windowb, windowc, windowd) <-
+            rectSketch (point & relx center (-30.5) & y 0) (\a -> point & relx a 61 & rely innerc 0)
           adapterWindow <- poly [windowa, windowb, windowc, windowd]
 
           -- stopper hook
-          stopperc <- point & relx center 11 & rely innerc (-9)
-          stoppera <- point & relx center (-11) & rely stopperc (-7)
-          (stopperb, stopperd) <- rectSketch stoppera stopperc
+          (stoppera, stopperb, stopperc, stopperd) <-
+            rectSketch (point & relx center (-11) & rely innerc (-16)) (\_ -> point & relx center 11 & rely innerc (-9))
           stopperHook <- poly [stoppera, stopperb, stopperc, stopperd]
           pure $ ZRecord {..}
 
@@ -112,9 +108,10 @@ obj =
     let yrec = sketchRecord do
           --  upper lever window
           center' <- point & x zrec.center.x & y 0
-          upperLeverWindowa <- point & relx center' (-11) & rely center' (-3)
-          upperLeverWindowc <- point & relx upperLeverWindowa 22 & rely upperLeverWindowa 6
-          (upperLeverWindowb, upperLeverWindowd) <- rectSketch upperLeverWindowa upperLeverWindowc
+          (upperLeverWindowa, upperLeverWindowb, upperLeverWindowc, upperLeverWindowd) <-
+            rectSketch
+              (point & relx center' (-11) & rely center' (-3))
+              (\a -> point & relx a 22 & rely a 6)
           upperLeverWindow <- poly [upperLeverWindowa, upperLeverWindowb, upperLeverWindowc, upperLeverWindowd]
 
           -- adapter to caster side
