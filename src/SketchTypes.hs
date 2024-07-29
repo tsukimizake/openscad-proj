@@ -92,6 +92,11 @@ data ResultTH
   | PointResTH Vector2d
   deriving (Show)
 
+resultToResultTH :: Result -> ResultTH
+resultToResultTH = \case
+  ModelRes m -> ModelResTH m
+  PointRes x y -> PointResTH (x, y)
+
 modelAndVecToResult :: ([Model2d], [Vector2d]) -> [ResultTH]
 modelAndVecToResult (models, vecs) = fmap ModelResTH models <> fmap PointResTH vecs
 

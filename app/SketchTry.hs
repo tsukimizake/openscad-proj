@@ -10,6 +10,7 @@ import SketchTypes
 
 data Hoge = Hoge
   { honi :: Polygon,
+    fuwa :: Point,
     poyo :: Polygon
   }
   deriving (Show)
@@ -26,8 +27,9 @@ obj = do
         c <- intersectionPoint v1 v2
         honi <- poly =<< traverse (chamfer 0.3 . pure) [a, b, c]
         let poyo = honi
+        let fuwa = a
         pure Hoge {..}
-  pure $ linearExtrudeDefault 1 r.honi
+  pure $ linearExtrudeDefault 1 r.poyo
 
 run :: IO ()
 run =

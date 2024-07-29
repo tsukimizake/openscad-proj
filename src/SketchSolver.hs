@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
 {-# HLINT ignore "Avoid lambda" #-}
-module SketchSolver (runSolver) where
+module SketchSolver (runSolver, runSolver') where
 
 import Control.Applicative (liftA3)
 import Control.Monad (forM)
@@ -38,6 +38,24 @@ readStat = do
   (uf, eqs, exacts, pluses) <- get
   (onLines, sk, intersections, wideLines) <- ask
   pure $ SolverState uf onLines exacts pluses eqs sk intersections wideLines
+
+runSolver' :: ([Sketch], [Constraint]) -> Either SketchError [ResultTH]
+runSolver' (models, cs) =
+  let onLines = mapMaybe (\case OnLine p l -> Just (p, l); _ -> Nothing) cs
+      exacts = mapMaybe (\case Exact id v -> Just (id, v); _ -> Nothing) cs
+      eqs = mapMaybe (\case Eq l r -> Just (l, r); _ -> Nothing) cs
+      intersections = mapMaybe (\case Intersection l r p -> Just (l, r, p); _ -> Nothing) cs
+      pluses = mapMaybe (\case Plus l r d -> Just (l, r, d); _ -> Nothing) cs
+      wideLines = mapMaybe (\case WideLine w l r -> Just (w, l, r); _ -> Nothing) cs
+   in ( repeatUntilFixpoint (solveIntersections >> solveOnLines >> solvePluses >> solveWideLines >> solveUf)
+          >> validateAllJust
+          >> generateModel
+      )
+        & runState (emptyUF, eqs, exacts, pluses)
+        & runReader (onLines, models, intersections, wideLines)
+        & runError
+        & run
+        & fmap (\(res, _) -> List.map resultToResultTH res)
 
 runSolver :: (([Sketch], [Point]), [Constraint]) -> Either SketchError ([Model2d], [Vector2d])
 runSolver ((sketches, points), cs) =

@@ -1,6 +1,7 @@
 {-# HLINT ignore "Use first" #-}
 {-# LANGUAGE TupleSections #-}
 {-# HLINT ignore "Use <$>" #-}
+{-# HLINT ignore "Functor law" #-}
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 
 module Sketch
@@ -40,7 +41,7 @@ import qualified Data.Bifunctor
 import Data.Function ((&))
 import qualified Data.List as List
 import OpenSCAD (Model2d, Model3d, Vector2d, errorAssert, linearExtrudeDefault, mirror, rotate3d, translate)
-import SketchSolver (runSolver)
+import SketchSolver (runSolver, runSolver')
 import SketchTypes
 import Prelude hiding (id)
 import qualified Prelude
@@ -56,12 +57,8 @@ sketchRecord m =
     & runWriter
     & run
     & ( \((sks, proxy), cs) ->
-          let polys = sks & List.concatMap \case Poly s -> [Poly s]; _ -> []
-              points = sks & List.concatMap \case P s -> [s]; _ -> []
-           in runSolver ((polys, points), cs)
-                & encodeError
-                & (\(models, vecs) -> (modelAndVecToResult (models, vecs), proxy))
-                & fromListTH
+          runSolver' (sks, cs)
+            & either (const (error "should not happen")) (fromListTH . (,proxy))
       )
 
 sketchTuple :: (Models models, Points points) => SketchM (models, points) -> (Res models, PointRes points)
