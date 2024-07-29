@@ -15,7 +15,7 @@ data Hoge = Hoge
   }
   deriving (Show)
 
-generateInstance ''Hoge
+mkSketchRes ''Hoge
 
 obj :: OpenSCADM Model3d
 obj = do

@@ -7,9 +7,7 @@
 module Sketch
   ( Sketch,
     wrapShape,
-    sketchTuple,
     sketchRecord,
-    sketch,
     point,
     x,
     y,
@@ -37,7 +35,6 @@ where
 import Control.Monad.Freer
 import Control.Monad.Freer.State
 import Control.Monad.Freer.Writer (runWriter, tell)
-import qualified Data.Bifunctor
 import Data.Function ((&))
 import qualified Data.List as List
 import OpenSCAD (Model2d, Model3d, Vector2d, errorAssert, linearExtrudeDefault, mirror, rotate3d, translate)
@@ -61,24 +58,8 @@ sketchRecord m =
             & either (const (error "should not happen")) (fromListTH . (,proxy))
       )
 
-sketchTuple :: (Models models, Points points) => SketchM (models, points) -> (Res models, PointRes points)
-sketchTuple m =
-  m
-    & fmap (Data.Bifunctor.bimap toList toPointList)
-    & runState 0
-    & fmap fst
-    & runWriter
-    & run
-    & ( \((sks, pts), cs) ->
-          runSolver ((List.map fst sks, List.map fst pts), cs)
-            & encodeError
-            & Data.Bifunctor.bimap
-              (\skr -> fromList (zip (List.map ModelRes skr) (List.map snd sks)))
-              (\ptr -> fromPointList (zip (List.map (uncurry PointRes) ptr) (List.map snd pts)))
-      )
-
-sketch :: SketchM ([Polygon], [Point]) -> ([Model2d], [Vector2d])
-sketch m =
+sketchImpl :: SketchM ([Polygon], [Point]) -> ([Model2d], [Vector2d])
+sketchImpl m =
   m
     & fmap (\(polys, pts) -> (List.map wrapShape polys, pts))
     & runState 0
@@ -98,14 +79,14 @@ sketchPolys :: SketchM [Polygon] -> [Model2d]
 sketchPolys m =
   m
     & fmap (,[])
-    & sketch
+    & sketchImpl
     & fst
 
 sketchPoly :: SketchM Polygon -> Model2d
 sketchPoly m =
   m
     & fmap (\apoly -> ([apoly], []))
-    & sketch
+    & sketchImpl
     & \case
       ([r], []) -> r
       _ -> error "should not happen"

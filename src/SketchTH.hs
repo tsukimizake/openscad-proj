@@ -114,7 +114,7 @@ generateFromList (Record origname fields) = do
 --   }
 --   deriving (Show)
 --
--- generateInstance ''Hoge makes:
+-- mkSketchRes ''Hoge makes:
 --
 -- data HogeRes
 --     = HogeRes {honi :: OpenSCAD.Model2d,
@@ -132,8 +132,8 @@ generateFromList (Record origname fields) = do
 --                                          fuwa = SketchTypes.unwrapPointResTH fuwa,
 --                                          poyo = SketchTypes.unwrapModelResTH poyo}}
 
-generateInstance :: Name -> Q [Dec]
-generateInstance recordname =
+mkSketchRes :: Name -> Q [Dec]
+mkSketchRes recordname =
   do
     record <- readRecord recordname
     resRecordDecl <- mkResRecord record

@@ -3,6 +3,8 @@ module IveFrontAdapter2 (obj, run) where
 import Data.Function ((&))
 import OpenSCAD as OS
 import Sketch
+import SketchTH
+import SketchTypes
 import Prelude
 
 -- botLR = 85.2
@@ -12,6 +14,35 @@ import Prelude
 -- winW = 61
 -- leverWinW = 22
 
+data ZRecord = ZRecord
+  { outerhull :: Polygon,
+    inner :: Polygon,
+    adapterWindow :: Polygon,
+    stopperHook :: Polygon,
+    center :: Point
+  }
+
+mkSketchRes ''ZRecord
+
+data XRecord = XRecord
+  { innerSide :: Polygon,
+    adapterx :: Polygon,
+    hookx :: Polygon
+  }
+
+mkSketchRes ''XRecord
+
+data YRecord = YRecord
+  { upperLeverWindow :: Polygon,
+    adaptery :: Polygon,
+    hook :: Polygon,
+    divider :: Polygon,
+    enfol :: Polygon,
+    enfor :: Polygon
+  }
+
+mkSketchRes ''YRecord
+
 obj :: OpenSCADM Model3d
 obj =
   do
@@ -19,44 +50,44 @@ obj =
     let outerThickness = 10
 
     -- Z
-    let ((outerhull, inner, adapterWindow, stopperHook), center) = sketchTuple do
+    let zrec = sketchRecord do
           -- outer hull
           outa <- point & x 0 & y 0
           outc <- point & x 100 & y 65
           (outb, outd) <- rectSketch outa outc
-          out' <- poly [outa, outb, outc, outd]
+          outerhull <- poly [outa, outb, outc, outd]
           ac <- line & between outa outc
           bd <- line & between outb outd
-          center' <- intersectionPoint ac bd
+          center <- intersectionPoint ac bd
 
           -- adapter inner
-          innera <- point & relx center' (-(85.2 / 2)) & y 0
-          innerb <- point & relx center' (85.2 / 2) & y 0
-          innerc <- point & relx center' (82.1 / 2) & y innerHeight
-          innerd <- point & relx center' (-(82.1 / 2)) & y innerHeight
-          inner' <- poly [innera, innerb, innerc, innerd]
+          innera <- point & relx center (-(85.2 / 2)) & y 0
+          innerb <- point & relx center (85.2 / 2) & y 0
+          innerc <- point & relx center (82.1 / 2) & y innerHeight
+          innerd <- point & relx center (-(82.1 / 2)) & y innerHeight
+          inner <- poly [innera, innerb, innerc, innerd]
 
           -- adapter window
-          windowa <- point & relx center' (-30.5) & y 0
+          windowa <- point & relx center (-30.5) & y 0
           windowc <- point & relx windowa 61 & rely innerc 0
           (windowb, windowd) <- rectSketch windowa windowc
-          window' <- poly [windowa, windowb, windowc, windowd]
+          adapterWindow <- poly [windowa, windowb, windowc, windowd]
 
           -- stopper hook
-          stopperc <- point & relx center' 11 & rely innerc (-9)
-          stoppera <- point & relx center' (-11) & rely stopperc (-7)
+          stopperc <- point & relx center 11 & rely innerc (-9)
+          stoppera <- point & relx center (-11) & rely stopperc (-7)
           (stopperb, stopperd) <- rectSketch stoppera stopperc
-          stopperHook' <- poly [stoppera, stopperb, stopperc, stopperd]
-          pure ((out', inner', window', stopperHook'), center')
+          stopperHook <- poly [stoppera, stopperb, stopperc, stopperd]
+          pure $ ZRecord {..}
 
     -- X
-    let ((innerSide, adapterx, hookx), ()) = sketchTuple do
+    let xrec = sketchRecord do
           -- inner side
           innera <- point & x 2.5 & y 0
           innerb <- point & relx innera 4.93 & rely innera 0
           innerc <- point & relx innera 4.43 & rely innera innerHeight
           innerd <- point & relx innera 0 & rely innerc 0
-          innerSide' <- poly [innera, innerb, innerc, innerd]
+          innerSide <- poly [innera, innerb, innerc, innerd]
           center' <- point & x 0 & y 33
 
           -- adapter to casterside
@@ -67,38 +98,38 @@ obj =
           adapterab <- line & between adaptera adapterb
           adaptercd <- line & between adapterc adapterd
           adapterhead <- intersectionPoint adapterab adaptercd
-          adapter <- poly [adaptera, adapterhead, adapterd]
+          adapterx <- poly [adaptera, adapterhead, adapterd]
 
           -- hook for casterside adapter
           hooka <- point & relx center' 0 & rely center' (-6.3)
           hookb <- point & relx hooka 100 & rely hooka 0
           hookc <- point & relx hookb 100 & rely hookb 12.6
           hookd <- point & relx hooka 0 & rely hookc 0
-          hookx' <- poly [hooka, hookb, hookc, hookd]
-          pure ((innerSide', adapter, hookx'), ())
+          hookx <- poly [hooka, hookb, hookc, hookd]
+          pure XRecord {..}
 
     -- Y
-    let ((upperLeverWindow, adaptery, hook, divider, enfol, enfor), ()) = sketchTuple do
+    let yrec = sketchRecord do
           --  upper lever window
-          center' <- point & x center.x & y 0
+          center' <- point & x zrec.center.x & y 0
           upperLeverWindowa <- point & relx center' (-11) & rely center' (-3)
           upperLeverWindowc <- point & relx upperLeverWindowa 22 & rely upperLeverWindowa 6
           (upperLeverWindowb, upperLeverWindowd) <- rectSketch upperLeverWindowa upperLeverWindowc
-          upperLeverWindow' <- poly [upperLeverWindowa, upperLeverWindowb, upperLeverWindowc, upperLeverWindowd]
+          upperLeverWindow <- poly [upperLeverWindowa, upperLeverWindowb, upperLeverWindowc, upperLeverWindowd]
 
           -- adapter to caster side
           adaptera <- point & relx center' (-7) & rely center' outerThickness
           adapterb <- point & relx center' 7 & rely adaptera 0
           adapterc <- point & relx center' 6.5 & rely adapterb 20
           adapterd <- point & relx center' (-6.5) & rely adapterc 0
-          adapter' <- poly [adaptera, adapterb, adapterc, adapterd]
+          adaptery <- poly [adaptera, adapterb, adapterc, adapterd]
 
           -- hook on the adapter
           chook <- point & relx adapterc 0.8 & rely adapterc 0 & chamfer 0.4
           chead <- point & relx adapterc 0 & rely adapterc 7 & chamfer 0.3
           dhead <- point & relx adapterd 0 & rely adapterd 7 & chamfer 0.3
           dhook <- point & relx adapterd (-0.8) & rely adapterd 0 & chamfer 0.4
-          hook' <- poly [chook, chead, dhead, dhook]
+          hook <- poly [chook, chead, dhead, dhook]
 
           -- adapter divider
           dividera <- point & relx adaptera 2.5 & rely adaptera 0 & chamfer 4
@@ -108,48 +139,48 @@ obj =
           dividerad <- line & between dividera dividerd
           dividerbc <- line & between dividerb dividerc
           dividerhead <- intersectionPoint dividerad dividerbc
-          divider' <- poly [dividera, dividerhead, dividerb]
+          divider <- poly [dividera, dividerhead, dividerb]
 
           -- enforcer
           enfolbot <- point & relx dividerd (-1) & rely adapterd (-4)
           enfolmid <- point & relx dividerd 4 & rely adapterd 0 & chamfer 2
           enfoltop <- point & relx dividerd 0 & rely adapterd 4
-          enfol' <- poly [enfolbot, enfolmid, enfoltop]
+          enfol <- poly [enfolbot, enfolmid, enfoltop]
 
           enforbot <- point & relx dividerc 1 & rely enfolbot 0
           enformid <- point & relx dividerc (-4) & rely enfolmid 0 & chamfer 2
           enfortop <- point & relx dividerc 0 & rely enfoltop 0
-          enfor' <- poly [enforbot, enformid, enfortop]
-          pure ((upperLeverWindow', adapter', hook', divider', enfol', enfor'), ())
+          enfor <- poly [enforbot, enformid, enfortop]
+          pure YRecord {..}
 
-    outerhull
+    zrec.outerhull
       & sketchExtrude 0 outerThickness OnZAxis
-      & diff (upperLeverWindow & sketchExtrude 30 100 OnYAxis)
-      & diff (adapterWindow & sketchExtrude 0 4 OnZAxis)
+      & diff (yrec.upperLeverWindow & sketchExtrude 30 100 OnYAxis)
+      & diff (zrec.adapterWindow & sketchExtrude 0 4 OnZAxis)
       & diff
         ( intersection
-            [ inner & sketchExtrude 0 12 OnZAxis,
-              innerSide & sketchExtrude 0 100 OnXAxis
+            [ zrec.inner & sketchExtrude 0 12 OnZAxis,
+              xrec.innerSide & sketchExtrude 0 100 OnXAxis
             ]
         )
       & mappend
         ( intersection
-            [ adaptery & sketchExtrude 0 100 OnYAxis,
-              adapterx & sketchExtrude 0 200 OnXAxis
+            [ yrec.adaptery & sketchExtrude 0 100 OnYAxis,
+              xrec.adapterx & sketchExtrude 0 200 OnXAxis
             ]
         )
       & mappend
-        ( (hook & sketchExtrude 0 100 OnYAxis)
-            & with intersection (hookx & sketchExtrude 0 200 OnXAxis)
+        ( (yrec.hook & sketchExtrude 0 100 OnYAxis)
+            & with intersection (xrec.hookx & sketchExtrude 0 200 OnXAxis)
         )
-      & diff (divider & sketchExtrude 0 100 OnYAxis)
+      & diff (yrec.divider & sketchExtrude 0 100 OnYAxis)
       & mappend
-        ( enfol
-            & mappend enfor
+        ( yrec.enfol
+            & mappend yrec.enfor
             & sketchExtrude 0 100 OnYAxis
-            & with intersection (hookx & sketchExtrude 0 200 OnXAxis)
+            & with intersection (xrec.hookx & sketchExtrude 0 200 OnXAxis)
         )
-      & diff (stopperHook & sketchExtrude 0 8.5 OnZAxis)
+      & diff (zrec.stopperHook & sketchExtrude 0 8.5 OnZAxis)
       & pure
 
 run :: IO ()
