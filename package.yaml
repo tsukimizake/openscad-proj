@@ -44,6 +44,7 @@ default-extensions:
   - RecordWildCards
   - DeriveGeneric
   - TemplateHaskell
+  - TypeApplications
 
 library:
   source-dirs: src

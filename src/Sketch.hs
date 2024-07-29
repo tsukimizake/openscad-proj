@@ -6,6 +6,8 @@
 module Sketch
   ( Sketch,
     wrapShape,
+    sketchTuple,
+    sketchRecord,
     sketch,
     point,
     x,
@@ -26,7 +28,6 @@ module Sketch
     onXAxis,
     wideLine,
     rectSketch,
-    sketchTuple,
     sketchExtrude,
     ExtrudeAxis (..),
   )
@@ -45,6 +46,23 @@ import Prelude hiding (id)
 import qualified Prelude
 
 --- SOLVER
+
+sketchRecord :: (ModelsTH m) => SketchM m -> ResTH m
+sketchRecord m =
+  m
+    & fmap toListTH
+    & runState 0
+    & fmap fst
+    & runWriter
+    & run
+    & ( \((sks, proxy), cs) ->
+          let polys = sks & List.concatMap \case Poly s -> [Poly s]; _ -> []
+              points = sks & List.concatMap \case P s -> [s]; _ -> []
+           in runSolver ((polys, points), cs)
+                & encodeError
+                & (\(models, vecs) -> (modelAndVecToResult (models, vecs), proxy))
+                & fromListTH
+      )
 
 sketchTuple :: (Models models, Points points) => SketchM (models, points) -> (Res models, PointRes points)
 sketchTuple m =

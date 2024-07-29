@@ -87,7 +87,34 @@ data Result
   | PointRes Double Double
   deriving (Show)
 
--- instances for sketchTuple
+data ResultTH
+  = ModelResTH Model2d
+  | PointResTH Vector2d
+  deriving (Show)
+
+modelAndVecToResult :: ([Model2d], [Vector2d]) -> [ResultTH]
+modelAndVecToResult (models, vecs) = fmap ModelResTH models <> fmap PointResTH vecs
+
+resutlToModelAndVec :: [ResultTH] -> ([Model2d], [Vector2d])
+resutlToModelAndVec = foldr f ([], [])
+  where
+    f (ModelResTH m) (ms, ps) = (m : ms, ps)
+    f (PointResTH p) (ms, ps) = (ms, p : ps)
+
+unwrapModelResTH :: ResultTH -> Model2d
+unwrapModelResTH = \case
+  ModelResTH m -> m
+  _ -> error "unwrapModelResTH"
+
+unwrapPointResTH :: ResultTH -> Vector2d
+unwrapPointResTH = \case
+  PointResTH m -> m
+  _ -> error "unwrapPointResTH"
+
+class ModelsTH a where
+  type ResTH a :: Type
+  toListTH :: a -> ([Sketch], Proxy a)
+  fromListTH :: ([ResultTH], Proxy a) -> ResTH a
 
 class Models a where
   type Res a :: Type

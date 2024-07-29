@@ -47,25 +47,29 @@ obj =
           stoppera <- point & relx center' (-11) & rely stopperc (-7)
           (stopperb, stopperd) <- rectSketch stoppera stopperc
           stopperHook' <- poly [stoppera, stopperb, stopperc, stopperd]
-
           pure ((out', inner', window', stopperHook'), center')
 
     -- X
     let ((innerSide, adapterx, hookx), ()) = sketchTuple do
+          -- inner side
           innera <- point & x 2.5 & y 0
           innerb <- point & relx innera 4.93 & rely innera 0
           innerc <- point & relx innera 4.43 & rely innera innerHeight
           innerd <- point & relx innera 0 & rely innerc 0
           innerSide' <- poly [innera, innerb, innerc, innerd]
           center' <- point & x 0 & y 33
-          adaptera <- point & relx center' outerThickness & rely center' (-18)
-          adapterb <- point & relx adaptera 20 & rely adaptera 1
-          adapterc <- point & relx adaptera 20 & rely center' 18
-          adapterd <- point & relx adaptera 0 & rely adapterc 1
+
+          -- adapter to casterside
+          adaptera <- point & relx center' outerThickness & rely center' (-17.25)
+          adapterb <- point & relx adaptera 20 & rely adaptera 0.5
+          adapterd <- point & relx adaptera 0 & rely adaptera 34.5
+          adapterc <- point & relx adaptera 20 & rely adapterd (-0.5)
           adapterab <- line & between adaptera adapterb
           adaptercd <- line & between adapterc adapterd
           adapterhead <- intersectionPoint adapterab adaptercd
           adapter <- poly [adaptera, adapterhead, adapterd]
+
+          -- hook for casterside adapter
           hooka <- point & relx center' 0 & rely center' (-6.3)
           hookb <- point & relx hooka 100 & rely hooka 0
           hookc <- point & relx hookb 100 & rely hookb 12.6
@@ -75,15 +79,18 @@ obj =
 
     -- Y
     let ((upperLeverWindow, adaptery, hook, divider, enfol, enfor), ()) = sketchTuple do
+          --  upper lever window
           center' <- point & x center.x & y 0
           upperLeverWindowa <- point & relx center' (-11) & rely center' (-3)
           upperLeverWindowc <- point & relx upperLeverWindowa 22 & rely upperLeverWindowa 6
           (upperLeverWindowb, upperLeverWindowd) <- rectSketch upperLeverWindowa upperLeverWindowc
           upperLeverWindow' <- poly [upperLeverWindowa, upperLeverWindowb, upperLeverWindowc, upperLeverWindowd]
+
+          -- adapter to caster side
           adaptera <- point & relx center' (-7) & rely center' outerThickness
           adapterb <- point & relx center' 7 & rely adaptera 0
-          adapterc <- point & relx center' 6 & rely adapterb 20
-          adapterd <- point & relx center' (-6) & rely adapterc 0
+          adapterc <- point & relx center' 6.5 & rely adapterb 20
+          adapterd <- point & relx center' (-6.5) & rely adapterc 0
           adapter' <- poly [adaptera, adapterb, adapterc, adapterd]
 
           -- hook on the adapter
@@ -132,8 +139,7 @@ obj =
             ]
         )
       & mappend
-        ( hook
-            & sketchExtrude 0 100 OnYAxis
+        ( (hook & sketchExtrude 0 100 OnYAxis)
             & with intersection (hookx & sketchExtrude 0 200 OnXAxis)
         )
       & diff (divider & sketchExtrude 0 100 OnYAxis)
@@ -143,7 +149,7 @@ obj =
             & sketchExtrude 0 100 OnYAxis
             & with intersection (hookx & sketchExtrude 0 200 OnXAxis)
         )
-      & diff (stopperHook & sketchExtrude 0 7 OnZAxis)
+      & diff (stopperHook & sketchExtrude 0 8.5 OnZAxis)
       & pure
 
 run :: IO ()

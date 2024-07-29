@@ -11,9 +11,10 @@ import IveRearAdapter
 import KitchenRack
 import LGuard
 import PaniaGuard
+import SketchTH
 import SketchTry
 import Washer
 
 main :: IO ()
 main =
-  IveFrontAdapter2.run
+  SketchTry.run

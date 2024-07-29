@@ -3,21 +3,31 @@
 module SketchTry (obj, run) where
 
 import Data.Function ((&))
-import Debug.Trace
 import OpenSCAD
 import Sketch
+import SketchTH
+import SketchTypes
+
+data Hoge = Hoge
+  { honi :: Polygon,
+    poyo :: Polygon
+  }
+  deriving (Show)
+
+generateInstance ''Hoge
 
 obj :: OpenSCADM Model3d
 obj = do
-  let ([r, _], []) = sketch do
+  let r = sketchRecord do
         a <- point & x 0 & y 0
         b <- point & x 4 & y 0
         v1 <- line & from a & degree 30
         v2 <- line & from b & degree 90
         c <- intersectionPoint v1 v2
-        res <- poly =<< traverse (chamfer 0.3 . pure) [a, b, c]
-        pure ([res, res], [])
-  pure $ linearExtrudeDefault 1 r
+        honi <- poly =<< traverse (chamfer 0.3 . pure) [a, b, c]
+        let poyo = honi
+        pure Hoge {..}
+  pure $ linearExtrudeDefault 1 r.honi
 
 run :: IO ()
 run =
