@@ -99,8 +99,8 @@ generateFromList (Record origname fields) = do
                 ( fields
                     & fmap
                       ( \case
-                          SkPolygon n -> (n, AppE (VarE 'unwrapModelResTH) (VarE n))
-                          SkPoint n -> (n, AppE (VarE 'unwrapPointResTH) (VarE n))
+                          SkPolygon n -> (n, AppE (VarE 'unwrapModelRes) (VarE n))
+                          SkPoint n -> (n, AppE (VarE 'unwrapPointRes) (VarE n))
                       )
                 )
           )
@@ -122,15 +122,15 @@ generateFromList (Record origname fields) = do
 --                poyo :: OpenSCAD.Model2d}
 --                  deriving (Show)
 -- instance SketchTypes.ModelsTH SketchTry.Hoge
---     where {type ResTH SketchTry.Hoge = HogeRes;
+--     where {type Res SketchTry.Hoge = HogeRes;
 --            toListTH a = ([SketchTypes.wrapShape a.honi,
 --                           SketchTypes.wrapShape a.fuwa,
 --                           SketchTypes.wrapShape a.poyo],
 --                          Data.Proxy.Proxy @SketchTry.Hoge);
 --            fromListTH ([honi, fuwa, poyo],
---                        _proxy) = HogeRes{honi = SketchTypes.unwrapModelResTH honi,
---                                          fuwa = SketchTypes.unwrapPointResTH fuwa,
---                                          poyo = SketchTypes.unwrapModelResTH poyo}}
+--                        _proxy) = HogeRes{honi = SketchTypes.unwrapModelRes honi,
+--                                          fuwa = SketchTypes.unwrapPointRes fuwa,
+--                                          poyo = SketchTypes.unwrapModelRes poyo}}
 
 mkSketchRes :: Name -> Q [Dec]
 mkSketchRes recordname =
@@ -145,7 +145,7 @@ mkSketchRes recordname =
               Nothing
               []
               (AppT (ConT ''ModelsTH) (ConT recordname))
-              [ TySynInstD $ TySynEqn Nothing (AppT (ConT $ toBaseName ''ResTH) (ConT recordname)) (ConT $ mkResRecordName recordname),
+              [ TySynInstD $ TySynEqn Nothing (AppT (ConT $ toBaseName ''Res) (ConT recordname)) (ConT $ mkResRecordName recordname),
                 toListTH',
                 fromListTH'
               ]

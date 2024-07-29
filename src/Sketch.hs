@@ -45,7 +45,7 @@ import qualified Prelude
 
 --- SOLVER
 
-sketchRecord :: (ModelsTH m) => SketchM m -> ResTH m
+sketchRecord :: (ModelsTH m) => SketchM m -> Res m
 sketchRecord m =
   m
     & fmap toListTH

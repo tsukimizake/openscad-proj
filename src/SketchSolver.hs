@@ -39,7 +39,7 @@ readStat = do
   (onLines, sk, intersections, wideLines) <- ask
   pure $ SolverState uf onLines exacts pluses eqs sk intersections wideLines
 
-runSolver' :: ([Sketch], [Constraint]) -> Either SketchError [ResultTH]
+runSolver' :: ([Sketch], [Constraint]) -> Either SketchError [Result]
 runSolver' (models, cs) =
   let onLines = mapMaybe (\case OnLine p l -> Just (p, l); _ -> Nothing) cs
       exacts = mapMaybe (\case Exact id v -> Just (id, v); _ -> Nothing) cs
@@ -55,7 +55,7 @@ runSolver' (models, cs) =
         & runReader (onLines, models, intersections, wideLines)
         & runError
         & run
-        & fmap (\(res, _) -> List.map resultToResultTH res)
+        & fmap fst
 
 runSolver :: (([Sketch], [Point]), [Constraint]) -> Either SketchError ([Model2d], [Vector2d])
 runSolver ((sketches, points), cs) =
@@ -70,7 +70,7 @@ runSolver ((sketches, points), cs) =
           >> generateModel
           <&> partitionEithers . List.map \case
             ModelRes m -> Left m
-            PointRes px py -> Right (px, py)
+            PointRes (px, py) -> Right (px, py)
       )
         & runState (emptyUF, eqs, exacts, pluses)
         & runReader (onLines, sketches ++ List.map P points, intersections, wideLines)
@@ -129,7 +129,7 @@ generateModel = do
     generateModelImpl (P p) = do
       x <- getValue p.x >>= assertJust
       y <- getValue p.y >>= assertJust
-      pure $ PointRes x y
+      pure $ PointRes (x, y)
     generateModelImpl x = do
       traceShowM x
       undefined

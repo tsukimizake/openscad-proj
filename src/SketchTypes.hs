@@ -84,39 +84,34 @@ type SolverM = Eff '[State (UnionFind, Eqs, Exacts, Pluses), Reader (OnLines, Sk
 
 data Result
   = ModelRes Model2d
-  | PointRes Double Double
+  | PointRes Vector2d
   deriving (Show)
 
-data ResultTH
-  = ModelResTH Model2d
-  | PointResTH Vector2d
-  deriving (Show)
+resultToResult :: Result -> Result
+resultToResult = \case
+  ModelRes m -> ModelRes m
+  PointRes p -> PointRes p
 
-resultToResultTH :: Result -> ResultTH
-resultToResultTH = \case
-  ModelRes m -> ModelResTH m
-  PointRes x y -> PointResTH (x, y)
+modelAndVecToResult :: ([Model2d], [Vector2d]) -> [Result]
+modelAndVecToResult (models, vecs) = fmap ModelRes models <> fmap PointRes vecs
 
-modelAndVecToResult :: ([Model2d], [Vector2d]) -> [ResultTH]
-modelAndVecToResult (models, vecs) = fmap ModelResTH models <> fmap PointResTH vecs
-
-resutlToModelAndVec :: [ResultTH] -> ([Model2d], [Vector2d])
+resutlToModelAndVec :: [Result] -> ([Model2d], [Vector2d])
 resutlToModelAndVec = foldr f ([], [])
   where
-    f (ModelResTH m) (ms, ps) = (m : ms, ps)
-    f (PointResTH p) (ms, ps) = (ms, p : ps)
+    f (ModelRes m) (ms, ps) = (m : ms, ps)
+    f (PointRes p) (ms, ps) = (ms, p : ps)
 
-unwrapModelResTH :: ResultTH -> Model2d
-unwrapModelResTH = \case
-  ModelResTH m -> m
-  _ -> error "unwrapModelResTH"
+unwrapModelRes :: Result -> Model2d
+unwrapModelRes = \case
+  ModelRes m -> m
+  _ -> error "unwrapModelRes"
 
-unwrapPointResTH :: ResultTH -> Vector2d
-unwrapPointResTH = \case
-  PointResTH m -> m
-  _ -> error "unwrapPointResTH"
+unwrapPointRes :: Result -> Vector2d
+unwrapPointRes = \case
+  PointRes m -> m
+  _ -> error "unwrapPointRes"
 
 class ModelsTH a where
-  type ResTH a :: Type
+  type Res a :: Type
   toListTH :: a -> ([Sketch], Proxy a)
-  fromListTH :: ([ResultTH], Proxy a) -> ResTH a
+  fromListTH :: ([Result], Proxy a) -> Res a
