@@ -71,14 +71,7 @@ obj =
   do
     let zrec = sketchRecord do
           -- frame
-          a <- point & x 0 & y 0
-          c <- point & x 180 & y 48
-          frameBottom <- line & from a & degree 0
-          frameTop <- line & from c & degree 0
-          frameLeft <- line & from a & degree 90
-          frameRight <- line & from c & degree 90
-          b <- intersectionPoint frameBottom frameRight
-          d <- intersectionPoint frameTop frameLeft
+          (a, b, c, d) <- rectSketch (point & x 0 & y 0) (\_ -> point & x 180 & y 48)
           frame <- poly [a, b, c, d]
           ac <- line & between a c
           bd <- line & between b d
