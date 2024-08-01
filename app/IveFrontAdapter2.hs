@@ -61,10 +61,10 @@ obj =
           center <- intersectionPoint ac bd
 
           -- adapter inner
-          innera <- point & relx center (-(85.2 / 2)) & y 0
-          innerb <- point & relx center (85.2 / 2) & y 0
-          innerc <- point & relx center (82.1 / 2) & y innerHeight
-          innerd <- point & relx center (-(82.1 / 2)) & y innerHeight
+          innera <- point & relx center (-(85.0 / 2)) & y 0
+          innerb <- point & relx center (85.0 / 2) & y 0
+          innerc <- point & relx center (82.0 / 2) & y innerHeight
+          innerd <- point & relx center (-(82.0 / 2)) & y innerHeight
           inner <- poly [innera, innerb, innerc, innerd]
 
           -- adapter window
@@ -153,8 +153,8 @@ obj =
 
           -- enforcer
           enfolbot <- point & relx dividerd (-1) & rely adapterd (-4)
-          enfolmid <- point & relx dividerd 4 & rely adapterd 0 & chamfer 2
-          enfoltop <- point & relx dividerd 0 & rely adapterd 4
+          enfolmid <- point & relx dividerd 4 & rely adapterneckd (-2) & chamfer 2
+          enfoltop <- point & relx dividerd 0 & rely adapterneckd 4
           enfol <- poly [enfolbot, enfolmid, enfoltop]
 
           enforbot <- point & relx dividerc 1 & rely enfolbot 0
