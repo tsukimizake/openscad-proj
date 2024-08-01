@@ -52,8 +52,8 @@ run = obj & render & writeFile "IveFrontCaster2.scad"
 
 mkSocketY :: Point -> SketchM Polygon
 mkSocketY center = do
-  socketa <- point & relx center (-6.5) & rely center 0
-  socketb <- point & relx center 6.5 & rely socketa 0
+  socketa <- point & relx center (-6.7) & rely center 0
+  socketb <- point & relx center 6.7 & rely socketa 0
   socketc <- point & relx center 7.5 & rely socketb 20
   socketd <- point & relx center (-7.5) & rely socketc 0
   poly [socketa, socketb, socketc, socketd]
@@ -115,8 +115,8 @@ obj =
           -- center hole
           (centerHolea, centerHoleb, centerHolec, centerHoled) <-
             rectSketch
-              (point & relx center (-6.5) & rely center (-6.5))
-              (\_ -> point & relx center 6.5 & rely center 6.5)
+              (point & relx center (-6.7) & rely center (-6.7))
+              (\_ -> point & relx center 6.7 & rely center 6.7)
           centerHole <- poly [centerHolea, centerHoleb, centerHolec, centerHoled]
           pure Z {..}
 
