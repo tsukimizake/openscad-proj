@@ -136,8 +136,8 @@ obj =
 
           -- hook on the adapter
           chook <- point & relx adapterneckc 0.8 & rely adapterneckc 0 & chamfer 0.4
-          chead <- point & relx adapterneckc 0 & rely adapterneckc 7 & chamfer 0.3
-          dhead <- point & relx adapterneckd 0 & rely adapterneckd 7 & chamfer 0.3
+          chead <- point & relx adapterneckc 0 & rely adapterneckc 12 & chamfer 0.3
+          dhead <- point & relx adapterneckd 0 & rely adapterneckd 12 & chamfer 0.3
           dhook <- point & relx adapterneckd (-0.8) & rely adapterneckd 0 & chamfer 0.4
           hook <- poly [chook, chead, dhead, dhook]
 
@@ -153,12 +153,12 @@ obj =
 
           -- enforcer
           enfolbot <- point & relx dividerd (-1) & rely adapterd (-4)
-          enfolmid <- point & relx dividerd 4 & rely adapterneckd (-2) & chamfer 2
-          enfoltop <- point & relx dividerd 0 & rely adapterneckd 4
+          enfolmid <- point & relx dividerd 3 & rely adapterneckd 0 & chamfer 3
+          enfoltop <- point & relx dividerd 0 & rely chead 0
           enfol <- poly [enfolbot, enfolmid, enfoltop]
 
           enforbot <- point & relx dividerc 1 & rely enfolbot 0
-          enformid <- point & relx dividerc (-4) & rely enfolmid 0 & chamfer 2
+          enformid <- point & relx dividerc (-3) & rely enfolmid 0 & chamfer 3
           enfortop <- point & relx dividerc 0 & rely enfoltop 0
           enfor <- poly [enforbot, enformid, enfortop]
           pure YRecord {..}
