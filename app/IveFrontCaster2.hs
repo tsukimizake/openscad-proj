@@ -108,8 +108,8 @@ obj =
           -- center hole
           (centerHolea, centerHoleb, centerHolec, centerHoled) <-
             rectSketch
-              (point & relx center (-6.7) & rely center (-6.7))
-              (\_ -> point & relx center 6.7 & rely center 6.7)
+              (point & relx center (-6.7) & rely center (-6.8))
+              (\_ -> point & relx center 6.7 & rely center 6.8)
           centerHole <- poly [centerHolea, centerHoleb, centerHolec, centerHoled]
           pure Z {..}
 
