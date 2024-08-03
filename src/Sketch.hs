@@ -221,7 +221,7 @@ data ExtrudeAxis = OnXAxis | OnYAxis | OnZAxis
 sketchExtrude :: Double -> Double -> ExtrudeAxis -> Model2d -> Model3d
 sketchExtrude bottom top axis model =
   model
-    & OpenSCAD.linearExtrudeDefault (top + bottom)
+    & OpenSCAD.linearExtrudeDefault (top - bottom)
     & OpenSCAD.translate (0, 0, bottom)
     & case axis of
       OnXAxis -> onXAxis

@@ -80,6 +80,7 @@ executable openscad-proj-exe
       IveFrontAdapter2
       IveFrontCaster2
       IveRearAdapter
+      IveRearAdapter2
       KitchenRack
       LGuard
       PaniaGuard
