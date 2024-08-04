@@ -135,10 +135,10 @@ obj =
           adapterneck <- poly [adapterd, adapterc, adapterneckc, adapterneckd]
 
           -- hook on the adapter
-          chook <- point & relx adapterneckc 1 & rely adapterneckc 0 & chamfer 0.4
+          chook <- point & relx adapterneckc 1.3 & rely adapterneckc 0 & chamfer 0.4
           chead <- point & relx adapterneckc 0 & rely adapterneckc 12 & chamfer 0.3
           dhead <- point & relx adapterneckd 0 & rely adapterneckd 12 & chamfer 0.3
-          dhook <- point & relx adapterneckd (-1) & rely adapterneckd 0 & chamfer 0.4
+          dhook <- point & relx adapterneckd (-1.3) & rely adapterneckd 0 & chamfer 0.4
           hook <- poly [chook, chead, dhead, dhook]
 
           -- adapter divider
