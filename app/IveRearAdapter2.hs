@@ -49,6 +49,12 @@ obj = do
 
   (zrec.outerFrame & sketchExtrude 0 5 OnZAxis)
     & diff (zrec.innerFrame & sketchExtrude (-1) 6 OnZAxis)
+    & diff
+      ( union
+          [ screwHole M5 10 True & translate (expandVector OnYAxis yrec.lscrewHole),
+            screwHole M5 10 True & translate (expandVector OnYAxis yrec.rscrewHole)
+          ]
+      )
     & pure
 
 run :: IO ()

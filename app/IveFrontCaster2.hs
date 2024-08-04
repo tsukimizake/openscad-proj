@@ -146,21 +146,18 @@ obj =
         )
       & diff
         ( union
-            [ screwHole M5 35 True & translate (expandVector zrec.screwLa),
-              screwHole M5 35 True & translate (expandVector zrec.screwLb),
-              screwHole M5 35 True & translate (expandVector zrec.screwLc),
-              screwHole M5 35 True & translate (expandVector zrec.screwLd),
-              screwHole M5 35 True & translate (expandVector zrec.screwRa),
-              screwHole M5 35 True & translate (expandVector zrec.screwRb),
-              screwHole M5 35 True & translate (expandVector zrec.screwRc),
-              screwHole M5 35 True & translate (expandVector zrec.screwRd)
+            [ screwHole M5 35 True & translate (expandVector OnZAxis zrec.screwLa),
+              screwHole M5 35 True & translate (expandVector OnZAxis zrec.screwLb),
+              screwHole M5 35 True & translate (expandVector OnZAxis zrec.screwLc),
+              screwHole M5 35 True & translate (expandVector OnZAxis zrec.screwLd),
+              screwHole M5 35 True & translate (expandVector OnZAxis zrec.screwRa),
+              screwHole M5 35 True & translate (expandVector OnZAxis zrec.screwRb),
+              screwHole M5 35 True & translate (expandVector OnZAxis zrec.screwRc),
+              screwHole M5 35 True & translate (expandVector OnZAxis zrec.screwRd)
             ]
         )
       & diff (zrec.centerHole & sketchExtrude (-1) 30 OnZAxis)
       & pure
-
-expandVector :: Vector2d -> Vector3d
-expandVector (x_, y_) = (x_, y_, 0)
 
 -- -- 旧実装
 -- obj :: Model3d

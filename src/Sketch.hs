@@ -29,6 +29,7 @@ module Sketch
     rectSketch,
     sketchExtrude,
     ExtrudeAxis (..),
+    expandVector,
   )
 where
 
@@ -37,7 +38,7 @@ import Control.Monad.Freer.State
 import Control.Monad.Freer.Writer (runWriter, tell)
 import Data.Function ((&))
 import qualified Data.List as List
-import OpenSCAD (Model2d, Model3d, Vector2d, errorAssert, linearExtrudeDefault, mirror, rotate3d, translate)
+import OpenSCAD (Model2d, Model3d, Vector2d, Vector3d, errorAssert, linearExtrudeDefault, mirror, rotate3d, translate)
 import SketchSolver (runSolver, runSolver')
 import SketchTypes
 import Prelude hiding (id)
@@ -227,3 +228,8 @@ sketchExtrude bottom top axis model =
       OnXAxis -> onXAxis
       OnYAxis -> onYAxis
       OnZAxis -> Prelude.id
+
+expandVector :: ExtrudeAxis -> Vector2d -> Vector3d
+expandVector OnXAxis (z_, y_) = (0, y_, z_)
+expandVector OnYAxis (x_, z_) = (x_, 0, z_)
+expandVector OnZAxis (x_, y_) = (x_, y_, 0)
