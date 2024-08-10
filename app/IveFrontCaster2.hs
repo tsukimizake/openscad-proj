@@ -141,7 +141,7 @@ obj =
       & diff
         ( intersection
             [ yrec.sockety & sketchExtrude 0 100 OnYAxis,
-              xrec.socketx & sketchExtrude 0 200 OnXAxis
+              xrec.socketx & sketchExtrude 0 200 OnXAxisOld
             ]
         )
       & diff

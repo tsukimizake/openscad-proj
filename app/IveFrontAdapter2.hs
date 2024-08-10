@@ -170,31 +170,31 @@ obj =
       & diff
         ( intersection
             [ zrec.inner & sketchExtrude 0 12 OnZAxis,
-              xrec.innerSide & sketchExtrude 0 100 OnXAxis
+              xrec.innerSide & sketchExtrude 0 100 OnXAxisOld
             ]
         )
       & mappend
         ( intersection
             [ yrec.adaptery & sketchExtrude 0 100 OnYAxis,
-              xrec.adapterx & sketchExtrude 0 200 OnXAxis
+              xrec.adapterx & sketchExtrude 0 200 OnXAxisOld
             ]
         )
       & mappend
         ( intersection
             [ yrec.adapterneck & sketchExtrude 0 100 OnYAxis,
-              xrec.adapterneckx & sketchExtrude 0 200 OnXAxis
+              xrec.adapterneckx & sketchExtrude 0 200 OnXAxisOld
             ]
         )
       & mappend
         ( (yrec.hook & sketchExtrude 0 100 OnYAxis)
-            & with intersection (xrec.hookx & sketchExtrude 0 200 OnXAxis)
+            & with intersection (xrec.hookx & sketchExtrude 0 200 OnXAxisOld)
         )
       & diff (yrec.divider & sketchExtrude 0 100 OnYAxis)
       & mappend
         ( yrec.enfol
             & mappend yrec.enfor
             & sketchExtrude 0 100 OnYAxis
-            & with intersection (xrec.hookx & sketchExtrude 0 200 OnXAxis)
+            & with intersection (xrec.hookx & sketchExtrude 0 200 OnXAxisOld)
         )
       & diff (zrec.stopperHook & sketchExtrude 0 8.5 OnZAxis)
       & pure

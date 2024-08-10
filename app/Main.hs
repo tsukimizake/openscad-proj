@@ -9,6 +9,7 @@ import IveFrontAdapter2
 import IveFrontCaster2
 import IveRearAdapter
 import IveRearAdapter2
+import IveRearCaster2
 import KitchenRack
 import LGuard
 import PaniaGuard
@@ -21,3 +22,4 @@ main = do
   IveFrontAdapter2.run
   IveFrontCaster2.run
   IveRearAdapter2.run
+  IveRearCaster2.run

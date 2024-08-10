@@ -24,7 +24,7 @@ module Sketch
     rely,
     relx,
     onYAxis,
-    onXAxis,
+    onXAxisOld,
     wideLine,
     rectSketch,
     sketchExtrude,
@@ -214,9 +214,12 @@ onYAxis :: Model3d -> Model3d
 onYAxis m = m & rotate3d (90, 0, 0) & mirror (0, 1, 0)
 
 onXAxis :: Model3d -> Model3d
-onXAxis m = m & rotate3d (0, -90, 0) & mirror (1, 0, 0)
+onXAxis m = m & rotate3d (0, 0, 90) & rotate3d (0, 90, 0)
 
-data ExtrudeAxis = OnXAxis | OnYAxis | OnZAxis
+onXAxisOld :: Model3d -> Model3d
+onXAxisOld m = m & rotate3d (0, 90, 0) & mirror (1, 0, 0)
+
+data ExtrudeAxis = OnXAxis | OnXAxisOld | OnYAxis | OnZAxis
   deriving (Show, Eq)
 
 sketchExtrude :: Double -> Double -> ExtrudeAxis -> Model2d -> Model3d
@@ -226,10 +229,12 @@ sketchExtrude bottom top axis model =
     & OpenSCAD.translate (0, 0, bottom)
     & case axis of
       OnXAxis -> onXAxis
+      OnXAxisOld -> onXAxisOld
       OnYAxis -> onYAxis
       OnZAxis -> Prelude.id
 
 expandVector :: ExtrudeAxis -> Vector2d -> Vector3d
-expandVector OnXAxis (z_, y_) = (0, y_, z_)
+expandVector OnXAxis (y_, z_) = (0, y_, z_)
+expandVector OnXAxisOld (z_, y_) = (0, y_, z_)
 expandVector OnYAxis (x_, z_) = (x_, 0, z_)
 expandVector OnZAxis (x_, y_) = (x_, y_, 0)
