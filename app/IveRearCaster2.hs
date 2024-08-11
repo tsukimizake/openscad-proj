@@ -68,12 +68,12 @@ obj =
           pure Y {..}
     (zres.frame & sketchExtrude 0 45 OnZAxis)
       & diff (union [zres.innerFrame, zres.lslit, zres.rslit] & sketchExtrude 7.5 (7.5 + 29) OnZAxis)
+      & mappend (union [zres.centerCatchl, zres.centerCatchr] & sketchExtrude 0 45 OnZAxis)
       & diff
         ( [yres.screwHolea, yres.screwHoleb, yres.screwHolec, yres.screwHoled]
-            & fmap (\hole -> screwHole M5 10 True & rotate3d (-90, 0, 0) & translate (expandVector OnYAxis hole) & translate (0, 21, 0))
+            & fmap (\hole -> screwHole M5 20 True & rotate3d (-90, 0, 0) & translate (expandVector OnYAxis hole) & translate (0, 16, 0))
             & union
         )
-      & mappend (union [zres.centerCatchl, zres.centerCatchr] & sketchExtrude 0 45 OnZAxis)
       & pure
 
 run :: IO ()
