@@ -81,32 +81,32 @@ obj =
     -- X
     let xrec = sketchRecord do
           -- inner side
-          innera <- point & x 2.5 & y 0
-          innerb <- point & relx innera 4.93 & rely innera 0
-          innerc <- point & relx innera 4.43 & rely innera innerHeight
-          innerd <- point & relx innera 0 & rely innerc 0
+          innera <- point & y 2.5 & x 0
+          innerb <- point & rely innera 4.93 & relx innera 0
+          innerc <- point & rely innera 4.43 & relx innera innerHeight
+          innerd <- point & rely innera 0 & relx innerc 0
           innerSide <- poly [innera, innerb, innerc, innerd]
-          center' <- point & x 0 & y 33
+          center' <- point & y 0 & x 33
 
           -- adapter to casterside
-          adaptera <- point & relx center' outerThickness & rely center' (-17)
-          adapterb <- point & relx adaptera 20 & rely adaptera 0.5
-          adapterc <- point & relx adaptera 20 & rely adapterb 33
-          adapterd <- point & relx adaptera 0 & rely adapterc 0.5
+          adaptera <- point & rely center' outerThickness & relx center' (-17)
+          adapterb <- point & rely adaptera 20 & relx adaptera 0.5
+          adapterc <- point & rely adaptera 20 & relx adapterb 33
+          adapterd <- point & rely adaptera 0 & relx adapterc 0.5
           adapterab <- line & between adaptera adapterb
           adaptercd <- line & between adapterc adapterd
           adapterhead <- intersectionPoint adapterab adaptercd
           adapterx <- poly [adaptera, adapterhead, adapterd]
 
           -- adapter neck
-          (necka, neckb, neckc, neckd) <- rectSketch (point & relx center' 0 & rely center' (-12.3)) (\a -> point & relx a 100 & rely a 24.6)
+          (necka, neckb, neckc, neckd) <- rectSketch (point & rely center' 0 & relx center' (-12.3)) (\a -> point & rely a 100 & relx a 24.6)
           adapterneckx <- poly [necka, neckb, neckc, neckd]
 
           -- hook for casterside adapter
-          hooka <- point & relx center' 0 & rely center' (-12.3)
-          hookb <- point & relx hooka 100 & rely hooka 0
-          hookc <- point & relx hookb 100 & rely center' 12.3
-          hookd <- point & relx hooka 0 & rely hookc 0
+          hooka <- point & rely center' 0 & relx center' (-12.3)
+          hookb <- point & rely hooka 100 & relx hooka 0
+          hookc <- point & rely hookb 100 & relx center' 12.3
+          hookd <- point & rely hooka 0 & relx hookc 0
           hookx <- poly [hooka, hookb, hookc, hookd]
           pure XRecord {..}
 
@@ -170,38 +170,38 @@ obj =
       & diff
         ( intersection
             [ zrec.inner & sketchExtrude 0 12 OnZAxis,
-              xrec.innerSide & sketchExtrude 0 100 OnXAxisOld
+              xrec.innerSide & sketchExtrude 0 100 OnXAxis
             ]
         )
       & mappend
         ( intersection
             [ yrec.adaptery & sketchExtrude 0 100 OnYAxis,
-              xrec.adapterx & sketchExtrude 0 200 OnXAxisOld
+              xrec.adapterx & sketchExtrude 0 200 OnXAxis
             ]
         )
       & mappend
         ( intersection
             [ yrec.adapterneck & sketchExtrude 0 100 OnYAxis,
-              xrec.adapterneckx & sketchExtrude 0 200 OnXAxisOld
+              xrec.adapterneckx & sketchExtrude 0 200 OnXAxis
             ]
         )
       & mappend
         ( (yrec.hook & sketchExtrude 0 100 OnYAxis)
-            & with intersection (xrec.hookx & sketchExtrude 0 200 OnXAxisOld)
+            & with intersection (xrec.hookx & sketchExtrude 0 200 OnXAxis)
         )
       & diff (yrec.divider & sketchExtrude 0 100 OnYAxis)
       & mappend
         ( yrec.enfol
             & mappend yrec.enfor
             & sketchExtrude 0 100 OnYAxis
-            & with intersection (xrec.hookx & sketchExtrude 0 200 OnXAxisOld)
+            & with intersection (xrec.hookx & sketchExtrude 0 200 OnXAxis)
         )
       & diff (zrec.stopperHook & sketchExtrude 0 8.5 OnZAxis)
       & pure
 
 run :: IO ()
 run =
-  obj & render & writeFile "ivefronteadapter2.scad"
+  obj & render & writeFile "IveFrontAdapter2.scad"
 
 -- 旧実装
 -- adapterInner :: Model3d
