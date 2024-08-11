@@ -62,23 +62,23 @@ obj = do
         -- lhook
         (lhooka, lhookb, lhookc, lhookd) <-
           rectSketch
-            (point & relx center (-20) & rely center (-30))
-            (\lha -> point & relx lha 3 & rely lha 30)
+            (point & relx center (-16) & rely center (-36))
+            (\lha -> point & relx lha 3 & rely lha 36)
         lhookcinner <- point & relx lhookc 10 & rely lhookc 0
         lhookc2inner <- point & relx lhookc 5 & rely lhookc 0
         lhookc' <- pure lhookc & chamfer 5
         lhook <- poly [lhooka, lhookb, lhookc', lhookcinner, lhookc2inner, lhookd]
         lhookheada <- point & relx lhooka 0 & rely lhooka 0
         lhookheadb <- point & relx lhookheada (-1.5) & rely lhookheada 0 & chamfer 0.5
-        lhookheadc <- point & relx lhookheada 0 & rely lhookheada 4
-        lhookheadd <- point & relx lhookheadb 0 & rely lhookheadb 4 & chamfer 0.5
+        lhookheadc <- point & relx lhookheada 0 & rely lhookheada 10
+        lhookheadd <- point & relx lhookheadb 0 & rely lhookheadc 0 & chamfer 0.5
         lhookhead <- poly [lhookheada, lhookheadb, lhookheadd, lhookheadc]
 
         -- rhook
         (rhooka, rhookb, rhookc, rhookd) <-
           rectSketch
-            (point & relx center 17 & rely center (-30))
-            (\rha -> point & relx rha 3 & rely rha 30)
+            (point & relx center 13 & rely center (-36))
+            (\rha -> point & relx rha 3 & rely rha 36)
         rhookdinner <- point & relx rhookd (-10) & rely rhookd 0
         rhookd2inner <- point & relx rhookd (-5) & rely rhookd 0
         rhookd' <- pure rhookd & chamfer 5
@@ -86,8 +86,8 @@ obj = do
 
         rhookheada <- point & relx rhookb 0 & rely rhookb 0
         rhookheadb <- point & relx rhookheada 1.5 & rely rhookheada 0 & chamfer 0.5
-        rhookheadc <- point & relx rhookheada 0 & rely rhookheada 4
-        rhookheadd <- point & relx rhookheadb 0 & rely rhookheadb 4 & chamfer 0.5
+        rhookheadc <- point & relx rhookheada 0 & rely rhookheada 10
+        rhookheadd <- point & relx rhookheadb 0 & rely rhookheadc 0 & chamfer 0.5
         rhookhead <- poly [rhookheada, rhookheadb, rhookheadd, rhookheadc]
 
         pure Z {..}
@@ -102,7 +102,7 @@ obj = do
 
   let xres = sketchRecord do
         adaptera <- point & x 0 & y 5
-        adapterb <- point & relx adaptera (-31) & rely adaptera 0
+        adapterb <- point & relx adaptera (-36) & rely adaptera 0
         adapterc <- point & relx adapterb 0 & rely adaptera (-25)
         adapterd <- point & relx adaptera 0 & rely adaptera (-28)
         adapter <- poly [adaptera, adapterb, adapterc, adapterd]
@@ -111,8 +111,9 @@ obj = do
   zres.outerFrame
     & sketchExtrude 0 triangleheight OnZAxis
     & mappend (zres.bottomFrame & sketchExtrude (-23) 0 OnZAxis)
+    & mappend (zres.centerhook & sketchExtrude (-23) triangleheight OnZAxis)
     & mappend
-      ( (union [zres.rhook, zres.rhookhead, zres.lhook, zres.lhookhead, zres.centerhook] & sketchExtrude (-23) triangleheight OnZAxis)
+      ( (union [zres.rhook, zres.rhookhead, zres.lhook, zres.lhookhead] & sketchExtrude (-23) triangleheight OnZAxis)
           & with intersection (xres.adapter & sketchExtrude 0 100 OnXAxis)
       )
     & diff (zres.innerFrame & sketchExtrude (-100) (triangleheight + 1) OnZAxis)
