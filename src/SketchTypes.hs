@@ -5,12 +5,10 @@ import Control.Monad.Freer.Error (Error)
 import Control.Monad.Freer.Reader (Reader)
 import Control.Monad.Freer.State
 import Control.Monad.Freer.Writer
-import Data.Functor ((<&>))
 import Data.Kind (Type)
 import Data.Map (Map)
 import Data.Proxy
 import OpenSCAD (Model2d, Vector2d)
-import Unsafe.Coerce (unsafeCoerce)
 import Prelude hiding (pi)
 
 newtype Id = Id Int
