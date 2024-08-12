@@ -139,7 +139,7 @@ obj =
 
     let xres = sketchRecord do
           center <- point & x 24 & y zres.center.y
-          (socka, sockb, sockc, sockd) <- rectSketch (point & relx center (-14) & y 0) (\a -> point & relx a 28 & rely a 50)
+          (socka, sockb, sockc, sockd) <- rectSketch (point & relx center (-14.5) & y 0) (\a -> point & relx a 29 & rely a 50)
           socket <- poly [socka, sockb, sockc, sockd]
           pure X {..}
     let reinforceFrame = union [zres.lb, zres.rb, zres.lt, zres.rt, zres.top, zres.bottom, zres.left, zres.right]
@@ -155,8 +155,8 @@ obj =
         )
       & mappend
         (yres.socket & sketchExtrude 0 50 OnYAxis & with intersection (zres.frame & sketchExtrude 0 100 OnZAxis))
-      & diff ((union [yres.socketInner, yres.lslit, yres.rslit] & sketchExtrude (-1) 50 OnYAxis) & with intersection (xres.socket & sketchExtrude 0 300 OnXAxis))
-      & mappend (union [yres.centerCatchl, yres.centerCatchr] & sketchExtrude 0 38 OnYAxis)
+      & diff ((union [yres.socketInner, yres.lslit, yres.rslit] & sketchExtrude (-1) 100 OnYAxis) & with intersection (xres.socket & sketchExtrude 0 300 OnXAxis))
+      & mappend (union [yres.centerCatchl, yres.centerCatchr] & sketchExtrude 0 50 OnYAxis & with intersection (zres.frame & sketchExtrude 0 100 OnZAxis))
       & mappend (union [zres.screwReinforcel, zres.screwReinforcer] & sketchExtrude 0 4 OnZAxis)
       & diff
         ( union

@@ -56,7 +56,7 @@ sketchRecord m =
     & run
     & ( \((sks, proxy), cs) ->
           runSolver' (sks, cs)
-            & either (const (error "should not happen")) (fromList . (,proxy))
+            & either (error . show) (fromList . (,proxy))
       )
 
 sketchImpl :: SketchM ([Polygon], [Point]) -> ([Model2d], [Vector2d])
@@ -90,7 +90,7 @@ sketchPoly m =
     & sketchImpl
     & \case
       ([r], []) -> r
-      _ -> error "should not happen"
+      e -> error $ show e
 
 genId :: SketchM Id
 genId = do

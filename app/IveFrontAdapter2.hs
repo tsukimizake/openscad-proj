@@ -26,9 +26,8 @@ mkSketchRes ''ZRecord
 
 data XRecord = XRecord
   { innerSide :: Polygon,
-    adapterx :: Polygon,
-    adapterneckx :: Polygon,
-    hookx :: Polygon
+    adapter :: Polygon,
+    hooks :: Polygon
   }
 
 mkSketchRes ''XRecord
@@ -85,28 +84,21 @@ obj =
           innerc <- point & relx innera innerHeight & rely innera 4.43
           innerd <- point & relx innerc 0 & rely innera 0
           innerSide <- poly [innera, innerb, innerc, innerd]
-          center' <- point & x 33 & y 0
+          center' <- point & x zrec.center.y & y 10
 
           -- adapter to casterside
-          adaptera <- point & relx center' (-17) & rely center' outerThickness
-          adapterb <- point & relx adaptera 0.5 & rely adaptera 20
-          adapterc <- point & relx adapterb 33 & rely adaptera 20
-          adapterd <- point & relx adapterc 0.5 & rely adaptera 0
-          adapterab <- line & between adaptera adapterb
-          adaptercd <- line & between adapterc adapterd
-          adapterhead <- intersectionPoint adapterab adaptercd
-          adapterx <- poly [adaptera, adapterhead, adapterd]
+          adaptera <- point & relx center' (-14) & rely center' 0
+          adapterb <- point & relx adaptera 28 & rely adaptera 0
+          adapterc <- point & relx adapterb 0 & rely adapterb 40
+          adapterd <- point & relx center' (-14) & rely adapterc 0
+          adapter <- poly [adaptera, adapterb, adapterc, adapterd]
 
-          -- adapter neck
-          (necka, neckb, neckc, neckd) <- rectSketch (point & relx center' (-12.3) & rely center' 0) (\a -> point & relx a 24.6 & rely a 100)
-          adapterneckx <- poly [necka, neckb, neckc, neckd]
+          hooksa <- point & relx center' (-13) & rely center' 0
+          hooksb <- point & relx hooksa 1 & rely hooksa 36
+          hooksc <- point & relx hooksb 24 & rely hooksb 0
+          hooksd <- point & relx center' 13 & rely center' 0
+          hooks <- poly [hooksa, hooksb, hooksc, hooksd]
 
-          -- hook for casterside adapter
-          hooka <- point & relx center' (-12.3) & rely center' 0
-          hookb <- point & relx hooka 0 & rely hooka 100
-          hookc <- point & relx center' 12.3 & rely hookb 100
-          hookd <- point & relx hookc 0 & rely hooka 0
-          hookx <- poly [hooka, hookb, hookc, hookd]
           pure XRecord {..}
 
     -- Y
@@ -160,16 +152,15 @@ obj =
       & sketchExtrude 0 outerThickness OnZAxis
       & diff (yrec.upperLeverWindow & sketchExtrude 30 100 OnYAxis)
       & diff (zrec.adapterWindow & sketchExtrude 0 4 OnZAxis)
-      & diff
-        ( intersection
-            [ zrec.inner & sketchExtrude 0 12 OnZAxis,
-              xrec.innerSide & sketchExtrude 0 100 OnXAxis
-            ]
-        )
-      & mappend (yrec.centerhook & sketchExtrude 10 30 OnYAxis)
+      & diff (intersection [zrec.inner & sketchExtrude 0 12 OnZAxis, xrec.innerSide & sketchExtrude 0 100 OnXAxis])
       & mappend
-        ( union [yrec.rhook, yrec.rhookhead, yrec.lhook, yrec.lhookhead] & sketchExtrude 10 30 OnYAxis
-        -- & with intersection (xrec.adapter & sketchExtrude 0 100 OnXAxis)
+        ( (yrec.centerhook & sketchExtrude 10 60 OnYAxis)
+            & with intersection (xrec.adapter & sketchExtrude 0 100 OnXAxis)
+        )
+      & mappend
+        ( union [yrec.rhook, yrec.rhookhead, yrec.lhook, yrec.lhookhead]
+            & sketchExtrude 0 60 OnYAxis
+            & with intersection (xrec.hooks & sketchExtrude 0 100 OnXAxis)
         )
       & pure
 
