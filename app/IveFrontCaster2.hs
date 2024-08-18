@@ -126,13 +126,13 @@ obj =
 
           centerCatchla <- point & relx lslitd 0 & rely innera 0
           centerCatchlb <- point & relx centerCatchla 0 & rely socka 21
-          centerCatchlc <- point & relx centerCatchlb 4 & rely centerCatchlb 0
+          centerCatchlc <- point & relx center (-5.5) & rely centerCatchlb 0
           centerCatchld <- point & relx center (-3.5) & rely centerCatchla 0
           centerCatchl <- poly [centerCatchla, centerCatchlb, centerCatchlc, centerCatchld]
 
           centerCatchra <- point & relx rslita 0 & rely innera 0
           centerCatchrb <- point & relx centerCatchra 0 & rely socka 21
-          centerCatchrc <- point & relx centerCatchrb (-4) & rely centerCatchrb 0
+          centerCatchrc <- point & relx center 5.5 & rely centerCatchrb 0
           centerCatchrd <- point & relx center 3.5 & rely centerCatchra 0
           centerCatchr <- poly [centerCatchra, centerCatchrb, centerCatchrc, centerCatchrd]
           pure Y {..}
@@ -148,11 +148,6 @@ obj =
       & with union (reinforceFrame & linearExtrudeDefault 50)
       & with intersection (zres.frame & linearExtrudeDefault 100)
       & with intersection (yres.sideframe & linearExtrudeDefault 100 & onYAxis)
-      & diff
-        ( intersection
-            -- yres.sockety & sketchExtrude 0 100 OnYAxis, xres.socket & sketchExtrude 0 200 OnXAxisOld
-            []
-        )
       & mappend
         (yres.socket & sketchExtrude 0 50 OnYAxis & with intersection (zres.frame & sketchExtrude 0 100 OnZAxis))
       & diff ((union [yres.socketInner, yres.lslit, yres.rslit] & sketchExtrude (-1) 100 OnYAxis) & with intersection (xres.socket & sketchExtrude 0 300 OnXAxis))

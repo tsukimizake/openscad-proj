@@ -62,7 +62,7 @@ obj = do
         -- lhook
         (lhooka, lhookb, lhookc, lhookd) <-
           rectSketch
-            (point & relx center (-16) & rely center (-36))
+            (point & relx center (-17.5) & rely center (-36))
             (\lha -> point & relx lha 3 & rely lha 36)
         lhookcinner <- point & relx lhookc 10 & rely lhookc 0
         lhookc2inner <- point & relx lhookc 5 & rely lhookc 0
@@ -77,7 +77,7 @@ obj = do
         -- rhook
         (rhooka, rhookb, rhookc, rhookd) <-
           rectSketch
-            (point & relx center 13 & rely center (-36))
+            (point & relx center 14.5 & rely center (-36))
             (\rha -> point & relx rha 3 & rely rha 36)
         rhookdinner <- point & relx rhookd (-10) & rely rhookd 0
         rhookd2inner <- point & relx rhookd (-5) & rely rhookd 0
@@ -96,8 +96,8 @@ obj = do
 
   let yres = sketchRecord do
         zcenter <- point & x zres.center.x & y 0
-        lscrewHole <- point & relx zcenter (-25) & y (-18)
-        rscrewHole <- point & relx zcenter 25 & rely lscrewHole 0
+        lscrewHole <- point & relx zcenter (-26.5) & y (-18)
+        rscrewHole <- point & relx zcenter 26.5 & rely lscrewHole 0
         pure Y {..}
 
   let xres = sketchRecord do

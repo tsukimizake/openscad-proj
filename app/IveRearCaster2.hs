@@ -34,7 +34,7 @@ obj :: OpenSCADM Model3d
 obj =
   do
     let zres = sketchRecord do
-          (a, b, c, d) <- rectSketch (point & x 0 & y 0) (\_ -> point & x 38 & y 25)
+          (a, b, c, d) <- rectSketch (point & x 0 & y 0) (\_ -> point & x 40 & y 25)
           frame <- poly [a, b, c, d]
           ac <- line & between a c
           bd <- line & between b d
@@ -43,21 +43,21 @@ obj =
           (innera, innerb, innerc, innerd) <- rectSketch (point & relx center (-16) & rely a (-1)) (\_ -> point & relx center 16 & rely c (-4))
           innerFrame <- poly [innera, innerb, innerc, innerd]
 
-          (lslita, lslitb, lslitc, lslitd) <- rectSketch (point & relx center (-11) & rely center (-5)) (\a_ -> point & relx a_ (-5) & rely c 1)
+          (lslita, lslitb, lslitc, lslitd) <- rectSketch (point & relx center (-12.5) & rely center (-20)) (\a_ -> point & relx a_ (-5) & rely c 1)
           lslit <- poly [lslita, lslitb, lslitc, lslitd]
 
-          (rslita, rslitb, rslitc, rslitd) <- rectSketch (point & relx center 11 & rely center (-5)) (\a_ -> point & relx a_ 5 & rely c 1)
+          (rslita, rslitb, rslitc, rslitd) <- rectSketch (point & relx center 12.5 & rely center (-20)) (\a_ -> point & relx a_ 5 & rely c 1)
           rslit <- poly [rslita, rslitb, rslitc, rslitd]
 
           centerCatchla <- point & relx lslitd 0 & rely innerc 0
           centerCatchlb <- point & relx centerCatchla 0 & rely c (-21)
-          centerCatchlc <- point & relx centerCatchlb 4 & rely centerCatchlb 0
+          centerCatchlc <- point & relx center (-5.5) & rely centerCatchlb 0
           centerCatchld <- point & relx center (-3.5) & rely centerCatchla 0
           centerCatchl <- poly [centerCatchla, centerCatchlb, centerCatchlc, centerCatchld]
 
           centerCatchra <- point & relx rslita 0 & rely innerc 0
           centerCatchrb <- point & relx centerCatchra 0 & rely c (-21)
-          centerCatchrc <- point & relx centerCatchrb (-4) & rely centerCatchrb 0
+          centerCatchrc <- point & relx center 5.5 & rely centerCatchrb 0
           centerCatchrd <- point & relx center 3.5 & rely centerCatchra 0
           centerCatchr <- poly [centerCatchra, centerCatchrb, centerCatchrc, centerCatchrd]
           pure Z {..}

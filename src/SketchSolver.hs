@@ -219,16 +219,18 @@ solveOnLine (p, l) = do
       liftA2 (,) (getValue p) (getValue l)
         >>= \case
           ((Nothing, Just y), (Just lx, Just _ly, Just angle)) -> do
-            let x = lx + cos angle * y
+            traceShowM (lx, _ly, angle)
+            let x = lx + (y - _ly) / tan angle
+            traceShowM x
             putExact p.x x
           ((Just x_, Nothing), (Just _lx, Just ly, Just angle)) -> do
-            let y = ly + sin angle * x_
+            let y = ly + tan angle * (x_ - _lx)
             putExact p.y y
           ((Just x, Just y), (Nothing, Just _ly, Just angle)) -> do
-            let lx = x - cos angle * y
+            let lx = x - (y - _ly) / tan angle
             putExact l.x lx
           ((Just x, Just y), (Just _lx, Nothing, Just angle)) -> do
-            let ly = y - sin angle * x
+            let ly = y - tan angle * (x - _lx)
             putExact l.y ly
           ((Just x, Just y), (Just lx, Just ly, Nothing)) -> do
             let angle = atan2 (y - ly) (x - lx)

@@ -1,6 +1,7 @@
 module IveFrontAdapter2 (obj, run) where
 
 import Data.Function ((&))
+import Debug.Trace
 import OpenSCAD as OS
 import Sketch
 import SketchTH
@@ -27,13 +28,26 @@ mkSketchRes ''ZRecord
 data XRecord = XRecord
   { innerSide :: Polygon,
     adapter :: Polygon,
-    hooks :: Polygon
+    hooks :: Polygon,
+    necomimizone :: Polygon,
+    cutForPrinting :: Polygon
   }
 
 mkSketchRes ''XRecord
 
 data YRecord = YRecord
   { upperLeverWindow :: Polygon,
+    necomimil :: Polygon,
+    necomimir :: Polygon,
+    necoscrewl :: Point,
+    necoscrewr :: Point
+  }
+
+mkSketchRes ''YRecord
+
+data YRecordTilt = YRecordTilt
+  { center :: Point,
+    base :: Polygon,
     centerhook :: Polygon,
     lhook :: Polygon,
     lhookhead :: Polygon,
@@ -41,7 +55,7 @@ data YRecord = YRecord
     rhookhead :: Polygon
   }
 
-mkSketchRes ''YRecord
+mkSketchRes ''YRecordTilt
 
 obj :: OpenSCADM Model3d
 obj =
@@ -52,7 +66,7 @@ obj =
     -- Z
     let zrec = sketchRecord do
           -- outer hull
-          (outa, outb, outc, outd) <- rectSketch (point & x 0 & y 0) (\_ -> point & x 100 & y 65)
+          (outa, outb, outc, outd) <- rectSketch (point & x 0 & y 0) (\_ -> point & x 100 & y 75)
           outerhull <- poly [outa, outb, outc, outd]
           ac <- line & between outa outc
           bd <- line & between outb outd
@@ -84,21 +98,28 @@ obj =
           innerc <- point & relx innera innerHeight & rely innera 4.43
           innerd <- point & relx innerc 0 & rely innera 0
           innerSide <- poly [innera, innerb, innerc, innerd]
-          center' <- point & x zrec.center.y & y 10
+          center <- point & x zrec.center.y & y 10
 
           -- adapter to casterside
-          adaptera <- point & relx center' (-14) & rely center' 0
+          adaptera <- point & relx center (-14) & rely center 0
           adapterb <- point & relx adaptera 28 & rely adaptera 0
           adapterc <- point & relx adapterb 0 & rely adapterb 40
-          adapterd <- point & relx center' (-14) & rely adapterc 0
+          adapterd <- point & relx center (-14) & rely adapterc 0
           adapter <- poly [adaptera, adapterb, adapterc, adapterd]
 
-          hooksa <- point & relx center' (-13) & rely center' 0
-          hooksb <- point & relx hooksa 1 & rely hooksa 36
+          hooksa <- point & relx center (-13) & rely center (-20)
+          hooksb <- point & relx hooksa 1 & rely center 36
           hooksc <- point & relx hooksb 24 & rely hooksb 0
-          hooksd <- point & relx center' 13 & rely center' 0
+          hooksd <- point & relx center 13 & rely hooksa 0
           hooks <- poly [hooksa, hooksb, hooksc, hooksd]
 
+          (necomimizonea, necomimizoneb, necomimizonec, necomimizoned) <-
+            rectSketch (point & relx center (-30) & y 0) (\a -> point & relx a 60 & rely a 100)
+          necomimizone <- poly [necomimizonea, necomimizoneb, necomimizonec, necomimizoned]
+          (cutForPrintinga, cutForPrintingb, cutForPrintingc, cutForPrintingd) <-
+            rectSketch (point & x 0 & y 0) (\a -> point & x 75 & rely a 300)
+          cutForPrintingb' <- pure cutForPrintingb & chamfer 10
+          cutForPrinting <- poly [cutForPrintinga, cutForPrintingb', cutForPrintingc, cutForPrintingd]
           pure XRecord {..}
 
     -- Y
@@ -111,11 +132,32 @@ obj =
               (\a -> point & relx a 22 & rely a 6)
           upperLeverWindow <- poly [upperLeverWindowa, upperLeverWindowb, upperLeverWindowc, upperLeverWindowd]
 
+          necomimila <- point & x 0 & y 10
+          necomimilv1 <- line & from necomimila & degree 45
+          necomimilb <- point & relx necomimila 15 >>= onLine necomimilv1 & chamfer 3
+          necomimilc <- point & relx necomimila 30 & rely necomimila 0
+          necomimilv2 <- line & between necomimilb necomimilc
+          necoscrewl <- point & rely necomimila 10
+          _ <- onLine necomimilv2 necoscrewl
+          necomimil <- poly [necomimila, necomimilb, necomimilc]
+
+          necomimira <- point & x 100 & y 10
+          necomimirv1 <- line & from necomimira & degree 135
+          necomimirb <- point & relx necomimira (-15) >>= onLine necomimirv1 & chamfer 3
+          necomimirc <- point & relx necomimira (-30) & rely necomimira 0
+          necomimirv2 <- line & between necomimirb necomimirc
+          necoscrewr <- point & rely necomimira 10
+          _ <- onLine necomimirv2 necoscrewr
+          necomimir <- poly [necomimira, necomimirb, necomimirc]
+          pure YRecord {..}
+
+    let yrecTilt = sketchRecord do
+          center <- point & x zrec.center.x & y 0
           -- centerhook
-          centerhooka <- point & relx center (-3) & rely center 37
-          centerhookb <- point & relx center 3 & rely center 37
-          centerhookc <- point & relx center 5 & rely center 10
-          centerhookd <- point & relx center (-5) & rely center 10
+          centerhooka <- point & relx center (-3.3) & rely center 26
+          centerhookb <- point & relx center 3.3 & rely centerhooka 0
+          centerhookc <- point & relx center 5.3 & rely center 10
+          centerhookd <- point & relx center (-5.3) & rely centerhookc 0
           centerhook <- poly [centerhooka, centerhookb, centerhookc, centerhookd]
 
           -- lhook
@@ -124,7 +166,7 @@ obj =
               (point & relx center (-16) & rely center 10)
               (\lha -> point & relx lha 3 & rely lha 36)
           lhookbinner <- point & relx lhookb 10 & rely lhookb 0
-          lhookb' <- pure lhookb & chamfer 5
+          lhookb' <- pure lhookb & chamfer 4
           lhook <- poly [lhooka, lhookbinner, lhookb', lhookc, lhookd]
           lhookheada <- point & relx lhookd 0 & rely lhookd 0
           lhookheadb <- point & relx lhookheada (-1.5) & rely lhookheada 0 & chamfer 0.5
@@ -138,7 +180,7 @@ obj =
               (point & relx center 13 & rely center 10)
               (\rha -> point & relx rha 3 & rely rha 36)
           rhookainner <- point & relx rhooka (-10) & rely rhooka 0
-          rhooka' <- pure rhooka & chamfer 5
+          rhooka' <- pure rhooka & chamfer 4
           rhook <- poly [rhooka', rhookb, rhookc, rhookd, rhooka', rhookainner]
 
           rhookheada <- point & relx rhookc 0 & rely rhookc 0
@@ -146,22 +188,37 @@ obj =
           rhookheadc <- point & relx rhookheada 0 & rely rhookheada (-10)
           rhookheadd <- point & relx rhookheadb 0 & rely rhookheadc 0 & chamfer 0.5
           rhookhead <- poly [rhookheada, rhookheadb, rhookheadd, rhookheadc]
-          pure YRecord {..}
+          based <- point & relx lhooka 0 & rely lhooka 0
+          basevl <- line & from based & degree 60
+          basec <- point & relx rhookb 0 & rely rhookb 0
+          basevr <- line & from basec & degree 120
+          basea <- point & y (-10) >>= onLine basevl
+          baseb <- point & y (-10) >>= onLine basevr
+          base <- poly [basea, baseb, basec, based]
+          pure YRecordTilt {..}
 
     zrec.outerhull
       & sketchExtrude 0 outerThickness OnZAxis
+      & mappend
+        ( union [yrecTilt.centerhook, yrecTilt.rhook, yrecTilt.rhookhead, yrecTilt.lhook, yrecTilt.lhookhead, yrecTilt.base]
+            & sketchExtrude 0 60 OnYAxis
+            & with intersection (xrec.hooks & sketchExtrude 0 100 OnXAxis)
+            & withOrigin (expandVector OnYAxis yrecTilt.center) (rotate3d (0, -10, 0))
+            & translate (0, 0, 12)
+        )
       & diff (yrec.upperLeverWindow & sketchExtrude 30 100 OnYAxis)
       & diff (zrec.adapterWindow & sketchExtrude 0 4 OnZAxis)
       & diff (intersection [zrec.inner & sketchExtrude 0 12 OnZAxis, xrec.innerSide & sketchExtrude 0 100 OnXAxis])
+      & diff (zrec.stopperHook & sketchExtrude 0 9 OnZAxis)
       & mappend
-        ( (yrec.centerhook & sketchExtrude 10 60 OnYAxis)
-            & with intersection (xrec.adapter & sketchExtrude 0 100 OnXAxis)
+        ( (union [yrec.necomimil, yrec.necomimir] & sketchExtrude 0 75 OnYAxis)
+            & diff (xrec.necomimizone & sketchExtrude 0 100 OnXAxis)
         )
-      & mappend
-        ( union [yrec.rhook, yrec.rhookhead, yrec.lhook, yrec.lhookhead]
-            & sketchExtrude 0 60 OnYAxis
-            & with intersection (xrec.hooks & sketchExtrude 0 100 OnXAxis)
-        )
+      & diff (screwHole M4 16 True & rotate3d (0, 45, 0) & translate (expandVector OnYAxis yrec.necoscrewl) & translate (0, 4, 0))
+      & diff (screwHole M4 16 True & rotate3d (0, 45, 0) & translate (expandVector OnYAxis yrec.necoscrewl) & translate (0, 71.5, 0))
+      & diff (screwHole M4 16 True & rotate3d (0, -45, 0) & translate (expandVector OnYAxis yrec.necoscrewr) & translate (0, 4, 0))
+      & diff (screwHole M4 16 True & rotate3d (0, -45, 0) & translate (expandVector OnYAxis yrec.necoscrewr) & translate (0, 71.5, 0))
+      & with intersection (xrec.cutForPrinting & sketchExtrude 0 300 OnXAxis)
       & pure
 
 run :: IO ()
