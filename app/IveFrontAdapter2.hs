@@ -28,9 +28,10 @@ mkSketchRes ''ZRecord
 data XRecord = XRecord
   { innerSide :: Polygon,
     adapter :: Polygon,
-    hooks :: Polygon,
+    base :: Polygon,
     necomimizone :: Polygon,
-    cutForPrinting :: Polygon
+    cutForPrinting :: Polygon,
+    pinPoint :: Point
   }
 
 mkSketchRes ''XRecord
@@ -49,10 +50,8 @@ data YRecordTilt = YRecordTilt
   { center :: Point,
     base :: Polygon,
     centerhook :: Polygon,
-    lhook :: Polygon,
-    lhookhead :: Polygon,
-    rhook :: Polygon,
-    rhookhead :: Polygon
+    centerhooka :: Point,
+    centerhookc :: Point
   }
 
 mkSketchRes ''YRecordTilt
@@ -90,38 +89,6 @@ obj =
           stopperHook <- poly [stoppera, stopperb, stopperc, stopperd]
           pure $ ZRecord {..}
 
-    -- X
-    let xrec = sketchRecord do
-          -- inner side
-          innera <- point & x 0 & y 2.5
-          innerb <- point & relx innera 0 & rely innera 4.93
-          innerc <- point & relx innera innerHeight & rely innera 4.43
-          innerd <- point & relx innerc 0 & rely innera 0
-          innerSide <- poly [innera, innerb, innerc, innerd]
-          center <- point & x zrec.center.y & y 10
-
-          -- adapter to casterside
-          adaptera <- point & relx center (-14) & rely center 0
-          adapterb <- point & relx adaptera 28 & rely adaptera 0
-          adapterc <- point & relx adapterb 0 & rely adapterb 40
-          adapterd <- point & relx center (-14) & rely adapterc 0
-          adapter <- poly [adaptera, adapterb, adapterc, adapterd]
-
-          hooksa <- point & relx center (-13) & rely center (-20)
-          hooksb <- point & relx hooksa 1 & rely center 36
-          hooksc <- point & relx hooksb 24 & rely hooksb 0
-          hooksd <- point & relx center 13 & rely hooksa 0
-          hooks <- poly [hooksa, hooksb, hooksc, hooksd]
-
-          (necomimizonea, necomimizoneb, necomimizonec, necomimizoned) <-
-            rectSketch (point & relx center (-30) & y 0) (\a -> point & relx a 60 & rely a 100)
-          necomimizone <- poly [necomimizonea, necomimizoneb, necomimizonec, necomimizoned]
-          (cutForPrintinga, cutForPrintingb, cutForPrintingc, cutForPrintingd) <-
-            rectSketch (point & x 0 & y 0) (\a -> point & x 75 & rely a 300)
-          cutForPrintingb' <- pure cutForPrintingb & chamfer 10
-          cutForPrinting <- poly [cutForPrintinga, cutForPrintingb', cutForPrintingc, cutForPrintingd]
-          pure XRecord {..}
-
     -- Y
     let yrec = sketchRecord do
           --  upper lever window
@@ -154,55 +121,61 @@ obj =
     let yrecTilt = sketchRecord do
           center <- point & x zrec.center.x & y 0
           -- centerhook
-          centerhooka <- point & relx center (-3.3) & rely center 26
-          centerhookb <- point & relx center 3.3 & rely centerhooka 0
-          centerhookc <- point & relx center 5.3 & rely center 10
-          centerhookd <- point & relx center (-5.3) & rely centerhookc 0
+          centerhooka <- point & relx center (-19) & rely center 10
+          centerhookb <- point & relx center 19 & rely centerhooka 0
+          centerhookc <- point & relx centerhookb (-1) & rely centerhooka 20
+          centerhookd <- point & relx centerhooka 1 & rely centerhookc 0
           centerhook <- poly [centerhooka, centerhookb, centerhookc, centerhookd]
 
-          -- lhook
-          (lhooka, lhookb, lhookc, lhookd) <-
-            rectSketch
-              (point & relx center (-16) & rely center 10)
-              (\lha -> point & relx lha 3 & rely lha 36)
-          lhookbinner <- point & relx lhookb 10 & rely lhookb 0
-          lhookb' <- pure lhookb & chamfer 4
-          lhook <- poly [lhooka, lhookbinner, lhookb', lhookc, lhookd]
-          lhookheada <- point & relx lhookd 0 & rely lhookd 0
-          lhookheadb <- point & relx lhookheada (-1.5) & rely lhookheada 0 & chamfer 0.5
-          lhookheadc <- point & relx lhookheada 0 & rely lhookheada (-10)
-          lhookheadd <- point & relx lhookheadb 0 & rely lhookheadc 0 & chamfer 0.5
-          lhookhead <- poly [lhookheada, lhookheadb, lhookheadd, lhookheadc]
-
-          -- rhook
-          (rhooka, rhookb, rhookc, rhookd) <-
-            rectSketch
-              (point & relx center 13 & rely center 10)
-              (\rha -> point & relx rha 3 & rely rha 36)
-          rhookainner <- point & relx rhooka (-10) & rely rhooka 0
-          rhooka' <- pure rhooka & chamfer 4
-          rhook <- poly [rhooka', rhookb, rhookc, rhookd, rhooka', rhookainner]
-
-          rhookheada <- point & relx rhookc 0 & rely rhookc 0
-          rhookheadb <- point & relx rhookheada 1.5 & rely rhookheada 0 & chamfer 0.5
-          rhookheadc <- point & relx rhookheada 0 & rely rhookheada (-10)
-          rhookheadd <- point & relx rhookheadb 0 & rely rhookheadc 0 & chamfer 0.5
-          rhookhead <- poly [rhookheada, rhookheadb, rhookheadd, rhookheadc]
-          based <- point & relx lhooka 0 & rely lhooka 0
+          -- base
+          based <- point & relx centerhooka 0 & rely centerhooka 0
           basevl <- line & from based & degree 60
-          basec <- point & relx rhookb 0 & rely rhookb 0
+          basec <- point & relx centerhookb 0 & rely centerhookb 0
           basevr <- line & from basec & degree 120
           basea <- point & y (-10) >>= onLine basevl
           baseb <- point & y (-10) >>= onLine basevr
           base <- poly [basea, baseb, basec, based]
           pure YRecordTilt {..}
 
+    -- X
+    let xrec = sketchRecord do
+          -- inner side
+          innera <- point & x 0 & y 2.5
+          innerb <- point & relx innera 0 & rely innera 4.93
+          innerc <- point & relx innera innerHeight & rely innera 4.43
+          innerd <- point & relx innerc 0 & rely innera 0
+          innerSide <- poly [innera, innerb, innerc, innerd]
+          center <- point & x zrec.center.y & y 0
+
+          -- adapter to casterside
+          let baseHeight = yrecTilt.centerhooka.y
+          let adapterHeight = yrecTilt.centerhookc.y
+          basea <- point & relx center (-7.8) & rely center (-20)
+          baseb <- point & relx basea 15.6 & rely basea 0
+          adaptera <- point & relx basea 0 & rely center baseHeight
+          adapterb <- point & relx baseb 0 & rely adaptera 0
+          adapterc <- point & relx adapterb (-0.8) & rely adapterb adapterHeight
+          adapterd <- point & relx adaptera 0.8 & rely adapterc 0
+          base <- poly [basea, baseb, adapterb, adaptera]
+          adapter <- poly [adaptera, adapterb, adapterc, adapterd]
+
+          (necomimizonea, necomimizoneb, necomimizonec, necomimizoned) <-
+            rectSketch (point & relx center (-30) & y 0) (\a -> point & relx a 60 & rely a 100)
+          necomimizone <- poly [necomimizonea, necomimizoneb, necomimizonec, necomimizoned]
+          (cutForPrintinga, cutForPrintingb, cutForPrintingc, cutForPrintingd) <-
+            rectSketch (point & x 0 & y 0) (\a -> point & x 75 & rely a 300)
+          cutForPrintingb' <- pure cutForPrintingb & chamfer 10
+          cutForPrinting <- poly [cutForPrintinga, cutForPrintingb', cutForPrintingc, cutForPrintingd]
+          pinPoint <- point & relx center 0 & y (baseHeight + 10)
+          pure XRecord {..}
+
     zrec.outerhull
       & sketchExtrude 0 outerThickness OnZAxis
       & mappend
-        ( union [yrecTilt.centerhook, yrecTilt.rhook, yrecTilt.rhookhead, yrecTilt.lhook, yrecTilt.lhookhead, yrecTilt.base]
+        ( union [yrecTilt.centerhook, yrecTilt.base]
             & sketchExtrude 0 60 OnYAxis
-            & with intersection (xrec.hooks & sketchExtrude 0 100 OnXAxis)
+            & with intersection (union [xrec.base, xrec.adapter] & sketchExtrude 0 100 OnXAxis)
+            & diff (cylinder 100 3.45 def & rotate3d (0, 90, 0) & translate (expandVector OnXAxis xrec.pinPoint))
             & withOrigin (expandVector OnYAxis yrecTilt.center) (rotate3d (0, -10, 0))
             & translate (0, 0, 12)
         )

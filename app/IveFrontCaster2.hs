@@ -31,26 +31,24 @@ data Z = Z
     screwRc :: Point,
     screwRd :: Point,
     screwReinforcel :: Polygon,
-    screwReinforcer :: Polygon
+    screwReinforcer :: Polygon,
+    socketOuter :: Polygon,
+    socketInner :: Polygon
   }
 
 mkSketchRes ''Z
 
 data Y = Y
   { sideframe :: Polygon,
-    socket :: Polygon,
-    socketInner :: Polygon,
-    lslit :: Polygon,
-    rslit :: Polygon,
-    center :: Point,
-    centerCatchl :: Polygon,
-    centerCatchr :: Polygon
+    center :: Point
   }
 
 mkSketchRes ''Y
 
 data X = X
-  {socket :: Polygon}
+  { socketInner :: Polygon,
+    pinHole :: Point
+  }
 
 mkSketchRes ''X
 
@@ -97,6 +95,12 @@ obj =
           screwrcr <- point & relx screwRc (-4) & rely c 0
           screwReinforcer <- poly [screwrbr, b, c, screwrcr]
 
+          (socketOutera, socketOuterb, socketOuterc, socketOuterd) <-
+            rectSketch (point & relx center (-24) & rely center (-24)) (\a_ -> point & relx a_ 48 & rely a_ 48)
+          socketOuter <- poly [socketOutera, socketOuterb, socketOuterc, socketOuterd]
+          (socketInnera, socketInnerb, socketInnerc, socketInnerd) <-
+            rectSketch (point & relx center (-19) & rely center (-8)) (\a_ -> point & relx a_ 38 & rely a_ 16)
+          socketInner <- poly [socketInnera, socketInnerb, socketInnerc, socketInnerd]
           pure Z {..}
 
     let yres = sketchRecord do
@@ -112,35 +116,18 @@ obj =
           bd <- line & between b d
           center <- intersectionPoint ac bd
 
-          (socka, sockb, sockc, sockd) <- rectSketch (point & relx center (-19) & y 0) (\a_ -> point & relx a_ 38 & rely a_ 25)
-          socket <- poly [socka, sockb, sockc, sockd]
-
-          (innera, innerb, innerc, innerd) <- rectSketch (point & relx center (-16) & rely socka 4) (\_ -> point & relx center 16 & rely sockc 1)
-          socketInner <- poly [innera, innerb, innerc, innerd]
-
-          (lslita, lslitb, lslitc, lslitd) <- rectSketch (point & relx center (-11) & rely socka (-5)) (\a_ -> point & relx a_ (-5) & rely sockc 1)
-          lslit <- poly [lslita, lslitb, lslitc, lslitd]
-
-          (rslita, rslitb, rslitc, rslitd) <- rectSketch (point & relx center 11 & rely socka (-5)) (\a_ -> point & relx a_ 5 & rely sockc 1)
-          rslit <- poly [rslita, rslitb, rslitc, rslitd]
-
-          centerCatchla <- point & relx lslitd 0 & rely innera 0
-          centerCatchlb <- point & relx centerCatchla 0 & rely socka 21
-          centerCatchlc <- point & relx center (-5.5) & rely centerCatchlb 0
-          centerCatchld <- point & relx center (-3.5) & rely centerCatchla 0
-          centerCatchl <- poly [centerCatchla, centerCatchlb, centerCatchlc, centerCatchld]
-
-          centerCatchra <- point & relx rslita 0 & rely innera 0
-          centerCatchrb <- point & relx centerCatchra 0 & rely socka 21
-          centerCatchrc <- point & relx center 5.5 & rely centerCatchrb 0
-          centerCatchrd <- point & relx center 3.5 & rely centerCatchra 0
-          centerCatchr <- poly [centerCatchra, centerCatchrb, centerCatchrc, centerCatchrd]
           pure Y {..}
 
+    let socketTopHeight = 25
+    let socketBottomHeight = 4
     let xres = sketchRecord do
           center <- point & x 24 & y zres.center.y
-          (socka, sockb, sockc, sockd) <- rectSketch (point & relx center (-14.5) & y 0) (\a -> point & relx a 29 & rely a 50)
-          socket <- poly [socka, sockb, sockc, sockd]
+          socketInnera <- point & relx center (-7.5) & y socketBottomHeight
+          socketInnerb <- point & relx center 7.5 & y socketBottomHeight
+          socketInnerc <- point & relx center 8 & y socketTopHeight
+          socketInnerd <- point & relx center (-8) & y socketTopHeight
+          socketInner <- poly [socketInnera, socketInnerb, socketInnerc, socketInnerd]
+          pinHole <- point & relx center 0 & y (socketTopHeight - 10)
           pure X {..}
     let reinforceFrame = union [zres.lb, zres.rb, zres.lt, zres.rt, zres.top, zres.bottom, zres.left, zres.right]
 
@@ -148,10 +135,10 @@ obj =
       & with union (reinforceFrame & linearExtrudeDefault 50)
       & with intersection (zres.frame & linearExtrudeDefault 100)
       & with intersection (yres.sideframe & linearExtrudeDefault 100 & onYAxis)
-      & mappend
-        (yres.socket & sketchExtrude 0 50 OnYAxis & with intersection (zres.frame & sketchExtrude 0 100 OnZAxis))
-      & diff ((union [yres.socketInner, yres.lslit, yres.rslit] & sketchExtrude (-1) 100 OnYAxis) & with intersection (xres.socket & sketchExtrude 0 300 OnXAxis))
-      & mappend (union [yres.centerCatchl, yres.centerCatchr] & sketchExtrude 0 50 OnYAxis & with intersection (zres.frame & sketchExtrude 0 100 OnZAxis))
+      -- & mappend
+      --   (yres.socket & sketchExtrude 0 50 OnYAxis & with intersection (zres.frame & sketchExtrude 0 100 OnZAxis))
+      -- & diff ((union [yres.socketInner, yres.lslit, yres.rslit] & sketchExtrude (-1) 100 OnYAxis) & with intersection (xres.socket & sketchExtrude 0 300 OnXAxis))
+      -- & mappend (union [yres.centerCatchl, yres.centerCatchr] & sketchExtrude 0 50 OnYAxis & with intersection (zres.frame & sketchExtrude 0 100 OnZAxis))
       & mappend (union [zres.screwReinforcel, zres.screwReinforcer] & sketchExtrude 0 4 OnZAxis)
       & diff
         ( union
@@ -165,6 +152,13 @@ obj =
               screwHole M5 35 True & translate (expandVector OnZAxis zres.screwRd)
             ]
         )
+      & mappend (zres.socketOuter & sketchExtrude 0 socketTopHeight OnZAxis)
+      & diff
+        ( zres.socketInner
+            & sketchExtrude socketBottomHeight socketTopHeight OnZAxis
+            & with intersection (xres.socketInner & sketchExtrude 0 200 OnXAxis)
+        )
+      & diff (cylinder 200 3.425 def & rotate3d (0, 90, 0) & translate (expandVector OnXAxis xres.pinHole))
       & pure
 
 -- -- 旧実装

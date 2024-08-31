@@ -15,7 +15,6 @@ import Data.Functor ((<&>))
 import Data.Kind (Type)
 import qualified Data.List as List
 import Data.Maybe
-import Debug.Trace
 import OpenSCAD (Model2d, Vector2d, polygon)
 import SketchTypes
 import UnionFind (emptyUF, find, union)
@@ -131,7 +130,6 @@ generateModel = do
       y <- getValue p.y >>= assertJust
       pure $ PointRes (x, y)
     generateModelImpl x = do
-      traceShowM x
       undefined
 
 validateAllJust :: SolverM ()
@@ -219,9 +217,7 @@ solveOnLine (p, l) = do
       liftA2 (,) (getValue p) (getValue l)
         >>= \case
           ((Nothing, Just y), (Just lx, Just _ly, Just angle)) -> do
-            traceShowM (lx, _ly, angle)
             let x = lx + (y - _ly) / tan angle
-            traceShowM x
             putExact p.x x
           ((Just x_, Nothing), (Just _lx, Just ly, Just angle)) -> do
             let y = ly + tan angle * (x_ - _lx)
