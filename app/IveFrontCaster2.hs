@@ -127,8 +127,8 @@ obj =
           center <- point & x 24 & y zres.center.y
           socketInnera <- point & relx center (-7.5) & y socketBottomHeight
           socketInnerb <- point & relx center 7.5 & y socketBottomHeight
-          socketInnerc <- point & relx center 8 & y socketTopHeight
-          socketInnerd <- point & relx center (-8) & y socketTopHeight
+          socketInnerc <- point & relx center 8 & y (socketTopHeight + 1)
+          socketInnerd <- point & relx center (-8) & y (socketTopHeight + 1)
           socketInner <- poly [socketInnera, socketInnerb, socketInnerc, socketInnerd]
           pinHole <- point & relx center 0 & y (socketTopHeight - 10)
           pure X {..}
@@ -158,7 +158,7 @@ obj =
       & mappend (zres.socketOuter & sketchExtrude 0 socketTopHeight OnZAxis)
       & diff
         ( zres.socketInner
-            & sketchExtrude socketBottomHeight socketTopHeight OnZAxis
+            & sketchExtrude socketBottomHeight (socketTopHeight + 1) OnZAxis
             & with intersection (xres.socketInner & sketchExtrude 0 200 OnXAxis)
         )
       & diff (cylinder 200 3.425 def & rotate3d (0, 90, 0) & translate (expandVector OnXAxis xres.pinHole))

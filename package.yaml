@@ -70,6 +70,7 @@ executables:
     - -with-rtsopts=-N
     dependencies:
     - openscad-proj
+    - colour
 tests:
   sketch-test:
     main:                SketchExamplesSpec.hs

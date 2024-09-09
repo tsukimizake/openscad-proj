@@ -3,6 +3,8 @@
 {-# HLINT ignore "Use newtype instead of data" #-}
 module IveRearAdapter2 (obj, run) where
 
+import qualified Data.Colour as Color
+import qualified Data.Colour.SRGB as Color
 import Data.Function ((&))
 import OpenSCAD
 import Sketch
