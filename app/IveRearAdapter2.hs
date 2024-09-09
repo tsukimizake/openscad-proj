@@ -49,24 +49,24 @@ obj = do
         innerc <- point & relx c 0 & rely c (-10)
         innerFrame <- poly =<< traverse (chamfer 4 . pure) [innera, innerb, innerc]
         center <- point & relx c 0 & rely a 0
-        mida <- point & relx a 7 & rely a 2.5
-        midb <- point & relx b (-7) & rely b 2.5
+        mida <- point & relx a 5 & rely a 2.5
+        midb <- point & relx b (-5) & rely b 2.5
         bottomFrame <- wideLine 2.5 mida midb
 
-        centerhooka <- point & relx center (-3) & rely center (-20)
-        centerhookb <- point & relx center 3 & rely center (-20)
-        centerhookc <- point & relx center 5 & rely center 0
-        centerhookd <- point & relx center (-5) & rely center 0
+        centerhooka <- point & relx center (-4.4) & rely center (-31.5)
+        centerhookb <- point & relx center 4.4 & rely center (-31.5)
+        centerhookc <- point & relx center 4.9 & rely center 0
+        centerhookd <- point & relx center (-4.9) & rely center 0
         centerhook <- poly [centerhooka, centerhookb, centerhookc, centerhookd]
 
         -- lhook
         (lhooka, lhookb, lhookc, lhookd) <-
           rectSketch
-            (point & relx center (-17.5) & rely center (-36))
-            (\lha -> point & relx lha 3 & rely lha 36)
+            (point & relx center (-17.5) & rely center (-30.5))
+            (\lha -> point & relx lha 3 & rely lha 30.5)
         lhookcinner <- point & relx lhookc 10 & rely lhookc 0
         lhookc2inner <- point & relx lhookc 5 & rely lhookc 0
-        lhookc' <- pure lhookc & chamfer 5
+        lhookc' <- pure lhookc & chamfer 4
         lhook <- poly [lhooka, lhookb, lhookc', lhookcinner, lhookc2inner, lhookd]
         lhookheada <- point & relx lhooka 0 & rely lhooka 0
         lhookheadb <- point & relx lhookheada (-1.5) & rely lhookheada 0 & chamfer 0.5
@@ -77,11 +77,11 @@ obj = do
         -- rhook
         (rhooka, rhookb, rhookc, rhookd) <-
           rectSketch
-            (point & relx center 14.5 & rely center (-36))
-            (\rha -> point & relx rha 3 & rely rha 36)
+            (point & relx center 14.5 & rely center (-30.5))
+            (\rha -> point & relx rha 3 & rely rha 30.5)
         rhookdinner <- point & relx rhookd (-10) & rely rhookd 0
         rhookd2inner <- point & relx rhookd (-5) & rely rhookd 0
-        rhookd' <- pure rhookd & chamfer 5
+        rhookd' <- pure rhookd & chamfer 4
         rhook <- poly [rhooka, rhookb, rhookc, rhookdinner, rhookd2inner, rhookd']
 
         rhookheada <- point & relx rhookb 0 & rely rhookb 0
@@ -119,8 +119,8 @@ obj = do
     & diff (zres.innerFrame & sketchExtrude (-100) (triangleheight + 1) OnZAxis)
     & diff
       ( union
-          [ screwHole M5 10 True & rotate3d (-90, 0, 0) & translate (expandVector OnYAxis yres.lscrewHole),
-            screwHole M5 10 True & rotate3d (-90, 0, 0) & translate (expandVector OnYAxis yres.rscrewHole)
+          [ screwHole M5 10 False & rotate3d (-90, 0, 0) & translate (expandVector OnYAxis yres.lscrewHole),
+            screwHole M5 10 False & rotate3d (-90, 0, 0) & translate (expandVector OnYAxis yres.rscrewHole)
           ]
       )
     & pure

@@ -74,14 +74,17 @@ obj =
             rectSketch (point & relx c (-6) & rely center (-18)) (\ra -> point & relx ra (-15) & rely center 18)
 
           -- reinforce frame
-          framel <- point & relx a 0 & rely center 0
-          framer <- point & relx c 0 & rely center 0
+          framelu <- point & relx a 0 & rely center 6
+          frameld <- point & relx a 0 & rely center (-6)
+          frameru <- point & relx c 0 & rely center 6
+          framerd <- point & relx c 0 & rely center (-6)
+
           frameb <- point & relx center 0 & rely a 0
           framet <- point & relx center 0 & rely c 0
-          lb <- wideLine 1.5 framel frameb
-          rb <- wideLine 1.5 framer framet
-          lt <- wideLine 1.5 framel framet
-          rt <- wideLine 1.5 frameb framer
+          lb <- wideLine 1.5 frameld frameb
+          rb <- wideLine 1.5 framerd frameb
+          lt <- wideLine 1.5 framelu framet
+          rt <- wideLine 1.5 frameru framet
           top <- wideLine 2 c d
           bottom <- wideLine 2 a b
           left <- wideLine 2 a d
@@ -132,7 +135,7 @@ obj =
     let reinforceFrame = union [zres.lb, zres.rb, zres.lt, zres.rt, zres.top, zres.bottom, zres.left, zres.right]
 
     linearExtrudeDefault 2 zres.frame
-      & with union (reinforceFrame & linearExtrudeDefault 50)
+      & with union (reinforceFrame & linearExtrudeDefault 50 & diff (cylinder 200 9 def & rotate3d (0, 90, 0) & translate (expandVector OnXAxis xres.pinHole)))
       & with intersection (zres.frame & linearExtrudeDefault 100)
       & with intersection (yres.sideframe & linearExtrudeDefault 100 & onYAxis)
       -- & mappend

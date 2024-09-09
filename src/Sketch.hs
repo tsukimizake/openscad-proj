@@ -27,6 +27,7 @@ module Sketch
     onXAxisOld,
     wideLine,
     rectSketch,
+    rectCenter,
     sketchExtrude,
     ExtrudeAxis (..),
     expandVector,
@@ -187,6 +188,12 @@ rectSketch am cm = do
 --- POLYGON
 poly :: [Point] -> SketchM Polygon
 poly = pure . Polygon
+
+rectCenter :: Point -> Point -> Point -> Point -> SketchM Point
+rectCenter a b c d = do
+  v1 <- line & between a c
+  v2 <- line & between b d
+  intersectionPoint v1 v2
 
 --- INTERSECTION POINT
 
