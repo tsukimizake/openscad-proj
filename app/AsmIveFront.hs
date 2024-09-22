@@ -16,22 +16,25 @@ import SketchTypes
 
 obj :: OpenSCADM Model3d
 obj = do
-  adapter :: Model3d <-
+  adapter <-
     IveFrontAdapter2.obj
       <&> withOrigin (50, 0, 0) (rotate3d (0, 190, 0))
       <&> translate (42.1, -13.5, 46.8)
       >>= declModule
 
-  caster :: Model3d <-
+  caster <-
     IveFrontCaster2.obj
       >>= declModule
   let inter = intersection [adapter, caster]
   pure $
     union
-      [ inter & transparent (Color.withOpacity OpenSCAD.red 0.5),
-        adapter & transparent (Color.withOpacity OpenSCAD.blue 0.3),
-        caster & transparent (Color.withOpacity OpenSCAD.yellow 0.3)
+      [ inter & translucent 0.5,
+        adapter & translucent 0.3,
+        caster & translucent 0.3
       ]
+
+translucent :: Double -> Model3d -> Model3d
+translucent opacity model = model & transparent (Color.withOpacity OpenSCAD.red opacity)
 
 run :: IO ()
 run =
