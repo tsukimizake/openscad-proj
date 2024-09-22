@@ -32,7 +32,7 @@ main = hspec $ describe "SketchExamples" $ do
           v2 <- line & from b & degree 90
           c <- intersectionPoint v1 v2
           poly [a, b, c]
-    pitagoras1 `shouldBe` (polygon 3 [[(0.0, 0.0), (4.0, 0.0), (4.0, 1.9999999999999998)]])
+    pitagoras1 `shouldBe` (polygon 3 [[(0.0, 0.0), (4.0, 0.0), (4.0, 2.3094010767585025)]])
 
   it "pitagoras2" do
     let pitagoras2 = sketchPoly do
@@ -44,7 +44,7 @@ main = hspec $ describe "SketchExamples" $ do
           v3 <- line & from b & degree 90
           c <- intersectionPoint v2 v3
           poly [a, b, c]
-    pitagoras2 `shouldBe` (polygon 3 [[(0.0, 0.0), (4.0, 0.0), (4.0, 1.9999999999999998)]])
+    pitagoras2 `shouldBe` (polygon 3 [[(0.0, 0.0), (4.0, 0.0), (4.0, 2.3094010767585025)]])
   it "pitagoras3" do
     let pitagoras3 = sketchPoly do
           a <- point & x 0 -- y is not set, but solved with constraints
@@ -55,7 +55,7 @@ main = hspec $ describe "SketchExamples" $ do
           v3 <- line & from b & degree 90
           c <- intersectionPoint v2 v3
           poly [a, b, c]
-    pitagoras3 `shouldBe` (polygon 3 [[(0.0, 0.0), (4.0, 0.0), (4.0, 1.9999999999999998)]])
+    pitagoras3 `shouldBe` (polygon 3 [[(0.0, 0.0), (4.0, 0.0), (4.0, 2.3094010767585025)]])
 
   it "isoceles" do
     let isoceles = sketchPoly do
@@ -74,7 +74,7 @@ main = hspec $ describe "SketchExamples" $ do
           v2 <- line & from b & degree 90
           c <- intersectionPoint v1 v2
           poly =<< traverse (chamfer 0.5 . pure) [a, b, c]
-    chamferPita `shouldBe` ((polygon 3 [[(0.4472135954999579, 0.22360679774997894), (0.5, 0.0), (3.5, 0.0), (4.0, 0.5), (4.0, 1.4999999999999998), (3.552786404500042, 1.7763932022500208)]]))
+    chamferPita `shouldBe` ((polygon 3 [[(0.43301270189221935, 0.24999999999999994), (0.5, 0.0), (3.5, 0.0), (4.0, 0.5), (4.0, 1.8094010767585025), (3.566987298107781, 2.0594010767585025)]]))
   it "rect by relx/rely" do
     let rect = sketchPoly do
           a <- point & x 0 & y 0
