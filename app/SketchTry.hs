@@ -17,7 +17,7 @@ mkSketchRes ''Hoge
 
 obj :: OpenSCADM Model3d
 obj = do
-  let r = sketchRecord do
+  let r = sketch do
         a <- point & x 0 & y 0
         b <- point & x 4 & y 0
         v1 <- line & from a & degree 30

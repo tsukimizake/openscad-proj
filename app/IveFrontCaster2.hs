@@ -58,7 +58,7 @@ run = obj & render & writeFile "IveFrontCaster2.scad"
 obj :: OpenSCADM Model3d
 obj =
   do
-    let zres = sketchRecord do
+    let zres = sketch do
           -- frame
           (a, b, c, d) <- rectSketch (point & x 0 & y 0) (\_ -> point & x 180 & y 48)
           frame <- poly [a, b, c, d]
@@ -106,7 +106,7 @@ obj =
           socketInner <- poly [socketInnera, socketInnerb, socketInnerc, socketInnerd]
           pure Z {..}
 
-    let yres = sketchRecord do
+    let yres = sketch do
           a <- point & x 0 & y 0
           aup <- point & x 0 & y 5
           b <- point & x 80 & y 25
@@ -123,7 +123,7 @@ obj =
 
     let socketTopHeight = 25
     let socketBottomHeight = 4
-    let xres = sketchRecord do
+    let xres = sketch do
           center <- point & x 24 & y zres.center.y
           socketInnera <- point & relx center (-7.5) & y socketBottomHeight
           socketInnerb <- point & relx center 7.5 & y socketBottomHeight

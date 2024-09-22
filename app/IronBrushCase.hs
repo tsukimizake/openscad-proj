@@ -5,11 +5,20 @@ module IronBrushCase (obj, run) where
 import Data.Function ((&))
 import OpenSCAD
 import Sketch
+import SketchTH
+import SketchTypes
+
+data Z = Z
+  { out :: Polygon,
+    inner :: Polygon
+  }
+
+mkSketchRes ''Z
 
 obj :: OpenSCADM Model3d
 obj =
   do
-    let [out, inn] = sketchPolys do
+    let z = sketch do
           aout <- point & x 0 & y 0
           bout <- point & relx aout 0 & rely aout 34
           cout <- point & relx bout 40 & rely bout 0
@@ -20,10 +29,10 @@ obj =
           bin <- point & relx ain 30 & rely ain 0
           cin <- point & relx ain 30 & rely ain 23
           din <- point & relx ain 0 & rely ain 23
-          inn_ <- poly [ain, bin, cin, din]
-          pure [out_, inn_]
+          inner <- poly [ain, bin, cin, din]
+          pure $ Z {..}
 
-    let sideimpl = sketchPoly do
+    let sideimpl = sketch do
           a <- point & x 0 & y 0
           b <- point & x 0 & y 120
           vtop <- line & from b & degree 20
@@ -34,9 +43,9 @@ obj =
           c <- (intersectionPoint vtop =<< (line & from d & degree 90)) & chamfer 3
           poly [a, b, c, d, dda, da, daa]
     let side = sideimpl & linearExtrudeDefault 120 & onYAxis
-    linearExtrudeDefault 150 (difference out inn)
+    linearExtrudeDefault 150 (difference z.out z.inner)
       & with intersection side
-      & with union (linearExtrudeDefault 5 out & translate (0, 0, 3))
+      & with union (linearExtrudeDefault 5 z.out & translate (0, 0, 3))
       & pure
 
 run :: IO ()

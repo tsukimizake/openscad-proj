@@ -63,7 +63,7 @@ obj =
     let outerThickness = 10
 
     -- Z
-    let zrec = sketchRecord do
+    let zrec = sketch do
           -- outer hull
           (outa, outb, outc, outd) <- rectSketch (point & x 0 & y 0) (\_ -> point & x 100 & y 75)
           outerhull <- poly [outa, outb, outc, outd]
@@ -90,7 +90,7 @@ obj =
           pure $ ZRecord {..}
 
     -- Y
-    let yrec = sketchRecord do
+    let yrec = sketch do
           --  upper lever window
           center <- point & x zrec.center.x & y 0
           (upperLeverWindowa, upperLeverWindowb, upperLeverWindowc, upperLeverWindowd) <-
@@ -118,7 +118,7 @@ obj =
           necomimir <- poly [necomimira, necomimirb, necomimirc]
           pure YRecord {..}
 
-    let yrecTilt = sketchRecord do
+    let yrecTilt = sketch do
           center <- point & x zrec.center.x & y 0
           -- centerhook
           centerhooka <- point & relx center (-19) & rely center 10
@@ -138,7 +138,7 @@ obj =
           pure YRecordTilt {..}
 
     -- X
-    let xrec = sketchRecord do
+    let xrec = sketch do
           -- inner side
           innera <- point & x 0 & y 2.5
           innerb <- point & relx innera 0 & rely innera 4.93

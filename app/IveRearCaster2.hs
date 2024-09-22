@@ -33,7 +33,7 @@ mkSketchRes ''Y
 obj :: OpenSCADM Model3d
 obj =
   do
-    let zres = sketchRecord do
+    let zres = sketch do
           (a, b, c, d) <- rectSketch (point & x 0 & y 0) (\_ -> point & x 40 & y 20)
 
           ac <- line & between a c
@@ -68,7 +68,7 @@ obj =
           frame <- poly [a, b, c, totsurc, totsur, totsul, totsulc, d]
           pure Z {..}
 
-    let yres = sketchRecord do
+    let yres = sketch do
           (screwHolea, screwHoleb, screwHolec, screwHoled) <-
             rectSketch (point & x (zres.center.x - 7.5) & y 4.5) (\a -> point & relx a 15 & rely a 36)
           pure Y {..}

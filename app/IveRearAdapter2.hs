@@ -40,7 +40,7 @@ mkSketchRes ''X
 
 obj :: OpenSCADM Model3d
 obj = do
-  let zres = sketchRecord do
+  let zres = sketch do
         a <- point & x 0 & y 0 & chamfer 3
         b <- point & relx a 80 & rely a 0 & chamfer 3
         c <- point & relx a 40 & rely b 90 & chamfer 5
@@ -96,13 +96,13 @@ obj = do
 
   let triangleheight = 5
 
-  let yres = sketchRecord do
+  let yres = sketch do
         zcenter <- point & x zres.center.x & y 0
         lscrewHole <- point & relx zcenter (-26.5) & y (-18)
         rscrewHole <- point & relx zcenter 26.5 & rely lscrewHole 0
         pure Y {..}
 
-  let xres = sketchRecord do
+  let xres = sketch do
         adaptera <- point & x 0 & y 5
         adapterb <- point & relx adaptera (-36) & rely adaptera 0
         adapterc <- point & relx adapterb 0 & rely adaptera (-25)
