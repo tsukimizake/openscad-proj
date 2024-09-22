@@ -51,14 +51,7 @@ library:
   default-extensions:
   - LambdaCase
   dependencies:
-  - linear
-  - lens
-  - freer-simple
-  - colour
-  - containers
-  - prettyprinter
-  - template-haskell
-  - extensible
+  - openscad-hs-sketcher
 
 executables:
   openscad-proj-exe:
@@ -69,6 +62,7 @@ executables:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
+    - openscad-hs-sketcher
     - openscad-proj
     - colour
 tests:
@@ -80,6 +74,7 @@ tests:
     - -rtsopts
     - -with-rtsopts=-N
     dependencies:
+    - openscad-hs-sketcher
     - openscad-proj
     - hspec
 
