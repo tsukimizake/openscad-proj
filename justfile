@@ -1,12 +1,14 @@
 set shell := ["nu", "-c"]
 
 default:
-    stack run
+    stack build
+    # stack run
+    /Users/tsukimizake/openscad-proj/.stack-work/install/aarch64-osx/af2f735c875ccf31d38a50cbc7eef92885da4c775f6f51a65dc1e762cc347e2d/9.8.2/bin/openscad-proj-exe
 test:
     stack test
 
 watch:
-    watch . --glob=**/*.hs {|| just default }
+    watch --debounce-ms 1000 . --glob=**/*.hs {|| just default; null }
 
 new_module name:
     open app/template.hs | str replace --all "TEMPLATE" {{ name }} | save app/{{ name }}.hs

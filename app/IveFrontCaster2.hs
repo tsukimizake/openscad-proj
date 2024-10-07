@@ -2,7 +2,7 @@
 
 {-# HLINT ignore "Use newtype instead of data" #-}
 
-module IveFrontCaster2 (obj, run) where
+module IveFrontCaster2 (obj, run, octCylinder) where
 
 import Data.Function ((&))
 import OpenSCAD as OS
@@ -53,7 +53,8 @@ data X = X
 mkSketchRes ''X
 
 run :: IO ()
-run = obj & render & writeFile "IveFrontCaster2.scad"
+run = do
+  obj & render & writeFile "IveFrontCaster2.scad"
 
 obj :: OpenSCADM Model3d
 obj =
@@ -130,6 +131,7 @@ obj =
           socketInnerc <- point & relx center 8 & y (socketTopHeight + 1)
           socketInnerd <- point & relx center (-8) & y (socketTopHeight + 1)
           socketInner <- poly [socketInnera, socketInnerb, socketInnerc, socketInnerd]
+
           pinHole <- point & relx center 0 & y (socketTopHeight - 10)
           pure X {..}
     let reinforceFrame = union [zres.lb, zres.rb, zres.lt, zres.rt, zres.top, zres.bottom, zres.left, zres.right]
@@ -161,59 +163,13 @@ obj =
             & sketchExtrude socketBottomHeight (socketTopHeight + 1) OnZAxis
             & with intersection (xres.socketInner & sketchExtrude 0 200 OnXAxis)
         )
-      & diff (cylinder 200 3.425 def & rotate3d (0, 90, 0) & translate (expandVector OnXAxis xres.pinHole))
+      & diff (octCylinder 6.6 200 & rotate3d (0, 90, 0) & rotate3d (22.5, 0, 0) & translate (expandVector OnXAxis xres.pinHole))
       & pure
 
--- -- 旧実装
--- obj :: Model3d
--- obj =
---   ( ( linearExtrudeDefault 20 (polygon 3 [[(0, 0), (0, 25), (51, 25), (51, 0)]])
---         & rotate3d (0, -90, 0)
---         & translate (10, 0, 0)
---     )
---       `mappend` (triangle & translate (0, 0, 23))
---       `mappend` (triangle & mirror (1, 0, 0) & translate (0, 0, 23))
---       `mappend` (triangle & rotate3d (0, 7, 0) & translate (0, 0, 23))
---       `mappend` (triangle & rotate3d (0, 7, 0) & mirror (1, 0, 0) & translate (0, 0, 23))
---       `mappend` (triangle & rotate3d (0, -7, 0) & translate (0, 0, 23))
---       `mappend` (triangle & rotate3d (0, -7, 0) & mirror (1, 0, 0) & translate (0, 0, 23))
---       `mappend` (frame & translate (-90, 0, 0))
---       & with minkowski (sphere 0.5 def)
---   )
---     `difference` catcher
---     `difference` pinHole
---     `difference` (screwHoles & translate (83, -4, 8))
---     `difference` (screwHoles & translate (-70, -4, 8))
---
--- frame :: Model3d
--- frame =
---   box 180 3 50
---     `mappend` box 5 4 50
---     `mappend` (box 5 4 50 & translate (180 - 4, 0, 0))
---     `mappend` box 180 4 5
---     `mappend` (box 180 4 5 & translate (0, 0, 50 - 4))
---
--- triangle :: Model3d
--- triangle = polygon 3 [[(0, 0), (0, 22), (90, 0)]] & linearExtrudeDefault 4 & translate (0, 2, 0)
---
--- catcher :: Model3d
--- catcher =
---   rectangle 13 35
---     & linearExtrude 19 0 (0.95, 0.95) 10
---     & rotate3d (90, 0, 0)
---     & translate (-6.5, 26, 7.5)
---
--- pinHole :: Model3d
--- pinHole =
---   cylinder 100 (7 / 2) def & translate (0, 16, -5)
---
--- screwHoles :: Model3d
--- screwHoles =
---   let hole = screwHole M5 15 True & rotate3d (90, 0, 0)
---    in union
---         [ hole & translate (0, 10, 0),
---           hole & translate (15, 10, 0),
---           hole & translate (15, 10, 38),
---           hole & translate (0, 10, 38)
---         ]
---         & translate (-14, 0, -2)
+octCylinder :: Double -> Double -> Model3d
+octCylinder r h =
+  let oct :: Model2d
+      oct =
+        let rect = square r & translate (-(r / 2), -(r / 2))
+         in intersection [rect, rect & rotate2d 45]
+   in oct & linearExtrudeDefault h
