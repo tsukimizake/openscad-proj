@@ -163,7 +163,8 @@ obj =
             & sketchExtrude socketBottomHeight (socketTopHeight + 1) OnZAxis
             & with intersection (xres.socketInner & sketchExtrude 0 200 OnXAxis)
         )
-      & diff (octCylinder 6.6 200 & rotate3d (0, 90, 0) & rotate3d (22.5, 0, 0) & translate (expandVector OnXAxis xres.pinHole))
+      -- 6.6で実測6.56
+      & diff (octCylinder 6.33 200 & rotate3d (0, 90, 0) & rotate3d (22.5, 0, 0) & translate (expandVector OnXAxis xres.pinHole))
       & pure
 
 octCylinder :: Double -> Double -> Model3d
