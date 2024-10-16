@@ -1,5 +1,7 @@
 module Main (main) where
 
+import IveRearCaster3
+import IveRearAdapter3
 import AirClothCap
 import AsmIveFront
 import AsmIveRear
@@ -23,7 +25,6 @@ main :: IO ()
 main = do
   IveFrontAdapter2.run
   IveFrontCaster2.run
-  IveRearAdapter2.run
-  IveRearCaster2.run
-  AsmIveRear.run
   AsmIveFront.run
+  IveRearAdapter3.run
+  IveRearCaster3.run

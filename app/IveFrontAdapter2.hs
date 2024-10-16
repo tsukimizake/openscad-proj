@@ -1,8 +1,7 @@
 module IveFrontAdapter2 (obj, run) where
 
 import Data.Function ((&))
-import Debug.Trace
-import IveFrontCaster2 (octCylinder)
+import IveFrontCaster2 (pinHole)
 import OpenSCAD as OS
 import Sketch
 import SketchTH
@@ -177,7 +176,7 @@ obj =
             & sketchExtrude 0 60 OnYAxis
             & with intersection (union [xrec.base, xrec.adapter] & sketchExtrude 0 100 OnXAxis)
             -- 6.32で実測6.27
-            & diff (octCylinder 6.35 100 & rotate3d (0, 90, 0) & translate (expandVector OnXAxis xrec.pinPoint))
+            & diff (pinHole 6.35 100 & rotate3d (0, 90, 0) & translate (expandVector OnXAxis xrec.pinPoint))
             & withOrigin (expandVector OnYAxis yrecTilt.center) (rotate3d (0, -10, 0))
             & translate (0, 0, 12)
         )

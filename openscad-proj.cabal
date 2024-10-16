@@ -1,6 +1,6 @@
 cabal-version: 2.2
 
--- This file has been generated from package.yaml by hpack version 0.36.0.
+-- This file has been generated from package.yaml by hpack version 0.37.0.
 --
 -- see: https://github.com/sol/hpack
 
@@ -69,7 +69,9 @@ executable openscad-proj-exe
       IveFrontCaster2
       IveRearAdapter
       IveRearAdapter2
+      IveRearAdapter3
       IveRearCaster2
+      IveRearCaster3
       KitchenRack
       LGuard
       PaniaGuard

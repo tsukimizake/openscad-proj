@@ -2,7 +2,7 @@
 
 {-# HLINT ignore "Use newtype instead of data" #-}
 
-module IveFrontCaster2 (obj, run, octCylinder) where
+module IveFrontCaster2 (obj, run, pinHole) where
 
 import Data.Function ((&))
 import OpenSCAD as OS
@@ -164,13 +164,10 @@ obj =
             & with intersection (xres.socketInner & sketchExtrude 0 200 OnXAxis)
         )
       -- 6.6で実測6.56
-      & diff (octCylinder 6.33 200 & rotate3d (0, 90, 0) & rotate3d (22.5, 0, 0) & translate (expandVector OnXAxis xres.pinHole))
+      & diff (pinHole 6.33 200 & rotate3d (0, 90, 0) & rotate3d (45, 0, 0) & translate (expandVector OnXAxis xres.pinHole))
       & pure
 
-octCylinder :: Double -> Double -> Model3d
-octCylinder r h =
-  let oct :: Model2d
-      oct =
-        let rect = square r & translate (-(r / 2), -(r / 2))
-         in intersection [rect, rect & rotate2d 45]
-   in oct & linearExtrudeDefault h
+pinHole :: Double -> Double -> Model3d
+pinHole r h =
+  let rect = square r & translate (-(r / 2), -(r / 2))
+   in rect & linearExtrudeDefault h
