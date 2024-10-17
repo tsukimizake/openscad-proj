@@ -1,7 +1,5 @@
 module Main (main) where
 
-import IveRearCaster3
-import IveRearAdapter3
 import AirClothCap
 import AsmIveFront
 import AsmIveRear
@@ -13,7 +11,9 @@ import IveFrontAdapter2
 import IveFrontCaster2
 import IveRearAdapter
 import IveRearAdapter2
+import IveRearAdapter3
 import IveRearCaster2
+import IveRearCaster3
 import KitchenRack
 import LGuard
 import PaniaGuard
