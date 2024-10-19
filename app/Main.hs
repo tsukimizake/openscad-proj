@@ -3,6 +3,7 @@ module Main (main) where
 import AirClothCap
 import AsmIveFront
 import AsmIveRear
+import AsmIveRear3
 import HexCup
 import HonexCombTest
 import IronBrushCase
@@ -28,3 +29,4 @@ main = do
   AsmIveFront.run
   IveRearAdapter3.run
   IveRearCaster3.run
+  AsmIveRear3.run

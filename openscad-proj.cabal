@@ -61,6 +61,7 @@ executable openscad-proj-exe
       AirClothCap
       AsmIveFront
       AsmIveRear
+      AsmIveRear3
       HexCup
       HonexCombTest
       IronBrushCase
