@@ -117,7 +117,7 @@ obj =
               screwHole M5 10 True & rotate3d (-90, 0, 0) & translate (expandVector OnYAxis yres.screwHolec),
               screwHole M5 10 True & rotate3d (-90, 0, 0) & translate (expandVector OnYAxis yres.screwHoled)
             ]
-            & translate (0, 21, 0)
+            & translate (0, 16, 0)
         )
       & pure
 
